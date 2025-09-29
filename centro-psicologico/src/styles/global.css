@@ -1,0 +1,93 @@
+/* Tipografía y colores globales */
+body {
+  background-color: #f5f7fa;
+  color: #52796f;
+  font-family: 'Merriweather', serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Estilos para botones */
+.btn-primary {
+  background-color: #84a98c;
+  border-color: #84a98c;
+  border-radius: 20px;
+  font-weight: 600;
+  padding: 8px 20px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: #52796f;
+  border-color: #52796f;
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background-color: #84a98c;
+  border-color: #84a98c;
+  border-radius: 20px;
+  font-weight: 600;
+  padding: 10px 24px;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover, .btn-success:focus {
+  background-color: #52796f;
+  border-color: #52796f;
+  transform: translateY(-1px);
+}
+
+/* Cards personalizadas */
+.custom-card {
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(160, 180, 170, 0.18);
+}
+
+/* Títulos */
+h1, h2, h3 {
+  font-family: 'Nunito', sans-serif;
+  color: #52796f;
+}
+
+h1 { font-weight: 700; }
+h2 { font-weight: 600; }
+h3 { font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .jumbotron-title {
+    font-size: 2rem !important;
+  }
+  
+  .jumbotron-subtitle {
+    font-size: 1.2rem !important;
+  }
+}
+
+/*navbar*/
+
+.navbar-brand {
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  color: #52796f !important;
+}
+
+.navbar-nav .nav-link {
+  font-weight: 600;
+  color: #52796f !important;
+  transition: color 0.3s;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+  color: #84a98c !important;
+}

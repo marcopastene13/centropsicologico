@@ -1,0 +1,48 @@
+.footer {
+  background-color: #f5f7fa;
+  color: #52796f;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+}
+
+.footer h5 {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #3a5a40;
+}
+
+.footer a {
+  color: #52796f;
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: #84a98c;
+  text-decoration: underline;
+}
+
+.footer ul {
+  padding-left: 0;
+}
+
+.footer ul li {
+  margin-bottom: 0.5rem;
+}
+
+.footer hr {
+  border-top: 1px solid #d6d9d6;
+  margin: 1.5rem 0;
+}
+
+.footer .text-center {
+  color: #76977c;
+}
+
+.footer .bi {
+  transition: color 0.3s ease;
+}
+
+.footer .bi:hover {
+  color: #52796f;
+}

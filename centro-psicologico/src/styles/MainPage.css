@@ -1,0 +1,201 @@
+.mainpage-container {
+  min-height: 100vh;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+.jumbotron-section {
+  position: relative;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+}
+
+.jumbotron-background {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url("/logo192.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.jumbotron-content {
+  position: relative;
+  z-index: 2;
+  color: #52796f;
+  padding: 0 2rem;
+}
+
+.jumbotron-title {
+  font-family: "Nunito", sans-serif;
+  font-weight: 700;
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.jumbotron-subtitle {
+  font-family: "Merriweather", serif;
+  font-size: 1.4rem;
+  font-style: italic;
+  margin-bottom: 2rem;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.cta-button {
+  font-size: 1.2rem;
+  padding: 12px 32px;
+  border-radius: 24px;
+  color: white;
+  box-shadow: 0 5px 15px rgba(132, 169, 140, 0.4);
+  transition: background-color 0.3s ease;
+  border: none;
+}
+
+.cta-button:hover {
+  background-color: #52796f;
+}
+
+/* Profesionales */
+
+.custom-card {
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(160, 180, 170, 0.18);
+}
+
+
+/* News cards */
+
+.news-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f7f9f8 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  border-radius: 18px;
+  box-shadow: 0 2px 14px rgba(160, 180, 170, 0.10);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(160, 180, 170, 0.18);
+}
+
+.news-card .btn {
+  align-self: flex-start;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
+  color: #52796f;
+}
+
+.section-subtitle {
+  color: #52796f;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.about-news-section .row.align-items-stretch {
+  height: 200px; /* Define la altura deseada, ajusta a tu gusto */
+}
+
+.about-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.news-card {
+  height: 100%;
+}
+
+/*proffesional card */
+
+.professional-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  overflow: hidden;
+}
+
+.professional-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(160, 180, 170, 0.18);
+}
+
+.professional-card img,
+.professional-card .card-img-top {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.professional-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.professional-card .card-title {
+  font-weight: 700;
+  color: #52796f;
+}
+
+.professional-card .card-text {
+  flex-grow: 1;
+  color: #6b7c6a;
+  margin-bottom: 1rem;
+}
+
+.professional-card .btn {
+  border-radius: 20px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.professional-card .btn-primary {
+  background-color: #84a98c;
+  border: none;
+}
+
+.professional-card .btn-primary:hover {
+  background-color: #52796f;
+}
+
+.professional-card .btn-outline-success {
+  border-color: #84a98c;
+  color: #84a98c;
+}
+
+.professional-card .btn-outline-success:hover {
+  background-color: #84a98c;
+  color: white;
+}
+
