@@ -74,7 +74,7 @@ export default function ProfessionalsPage() {
       </Row>
       
       <div className="text-center mt-5">
-        <Button href="/contact" variant="outline-primary" size="lg">
+        <Button href="/contact" variant="outline-primary" size="lg" color="#9271c2">
           ¿No encuentras lo que buscas? Contáctanos
         </Button>
       </div>

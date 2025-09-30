@@ -39,6 +39,16 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-outline-primary {
+  color: #9271c2;
+  border-color: #9271c2;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+  background-color: #9271c2;
+  border-color: #9271c2;
+  transform: translateY(-1px);
+}
 /* Cards personalizadas */
 .custom-card {
   border-radius: 18px;
@@ -75,19 +85,24 @@ h3 { font-weight: 600; }
 
 /*navbar*/
 
+.navbar {
+  background-color: #f0ebe0 !important; /* crema claro */
+  box-shadow: 0 2px 16px rgba(200, 180, 140, 0.07);
+  border-bottom: 1px solid #e6d7b7;
+}
+
 .navbar-brand {
-  font-weight: 700;
-  font-family: "Nunito", sans-serif;
   color: #52796f !important;
+  font-weight: 700;
 }
 
 .navbar-nav .nav-link {
-  font-weight: 600;
   color: #52796f !important;
+  font-weight: 600;
   transition: color 0.3s;
 }
 
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
-  color: #84a98c !important;
+  color: #9271c2 !important;
 }

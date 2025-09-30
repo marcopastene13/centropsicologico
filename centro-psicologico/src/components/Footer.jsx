@@ -4,7 +4,7 @@ import "../styles/Footer.css";
 
 export default function Footer() {
   return (
-    <footer className="footer bg-light text-muted py-4 mt-5">
+    <footer className="footer text-muted py-4 mt-5">
       <Container>
         <Row>
           <Col md={4} className="mb-3">

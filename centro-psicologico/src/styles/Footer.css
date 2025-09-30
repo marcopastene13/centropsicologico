@@ -1,29 +1,23 @@
 .footer {
-  background-color: #f5f7fa;
+  background-color: #f0ebe0; /* crema claro */
   color: #52796f;
   font-family: 'Nunito', sans-serif;
   font-size: 0.9rem;
+  box-shadow: 0 -2px 16px rgba(200, 180, 140, 0.07);
 }
 
 .footer h5 {
-  font-weight: 700;
-  margin-bottom: 1rem;
   color: #3a5a40;
 }
 
 .footer a {
   color: #52796f;
-  transition: color 0.3s ease;
+  transition: color 0.3s;
   text-decoration: none;
 }
 
 .footer a:hover {
-  color: #84a98c;
-  text-decoration: underline;
-}
-
-.footer ul {
-  padding-left: 0;
+  color: #e9c46a;
 }
 
 .footer ul li {
@@ -31,18 +25,9 @@
 }
 
 .footer hr {
-  border-top: 1px solid #d6d9d6;
-  margin: 1.5rem 0;
+  border-top: 1px solid #e6d7b7;
 }
 
 .footer .text-center {
-  color: #76977c;
-}
-
-.footer .bi {
-  transition: color 0.3s ease;
-}
-
-.footer .bi:hover {
-  color: #52796f;
+  color: #b9b68c;
 }

@@ -92,7 +92,7 @@ export default function MainPage() {
                 </section>
 
                 {/* Sección acerca y noticias */}
-                <section className="about-news-section mt-5">
+                <section className="about-news-section mt-5 mb-5">
                     <Row className="align-items-stretch">
                         <Col md={6} className="mb-4 d-flex flex-column">
                             <h3 className="section-subtitle mb-4">Sobre Nosotros</h3>
