@@ -1,4 +1,5 @@
-import { Container, Card, Button, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Carousel } from "react-bootstrap";
+import { externalArticles } from "../data/externalArticles";
 import "../styles/MainPage.css";
 
 const professionals = [
@@ -19,24 +20,6 @@ const professionals = [
         name: "Stephany Troncoso",
         desc: "Especialista en terapia de pareja y psicología organizacional.",
         img: "/images/stephany.jpg"
-    }
-];
-
-const news = [
-    {
-        title: "Beneficios de la terapia online",
-        desc: "Descubre cómo la terapia digital puede ser efectiva.",
-        link: "/news/1"
-    },
-    {
-        title: "Manejo del estrés en tiempos modernos",
-        desc: "Técnicas actuales para reducir el estrés diario.",
-        link: "/news/2"
-    },
-    {
-        title: "Importancia del bienestar emocional",
-        desc: "Cómo mejorar tu salud mental y emocional día a día.",
-        link: "/news/3"
     }
 ];
 
@@ -103,33 +86,62 @@ export default function MainPage() {
                                     y un entorno seguro para cada paciente.
                                 </div>
                                 <Card.Footer className="bg-transparent border-0 mt-auto">
-                                    <Button href="/about" variant="primary" className="mt-3 w-100">
+                                    <Button href="/sobrenosotros" variant="primary" className="mt-3 w-100">
                                         Conocer más
                                     </Button>
                                 </Card.Footer>
                             </Card>
                         </Col>
+
                         <Col md={6} className="mb-4 d-flex flex-column">
                             <h3 className="section-subtitle mb-3">Artículos Recientes</h3>
-                            <Row className="flex-grow-1 g-3">
-                                {news.map((n, index) => (
-                                    <Col md={4} key={index} className="d-flex">
-                                        <Card className="custom-card news-card d-flex flex-column flex-fill">
+
+                            {/* Grid 3 columnas en md+ */}
+                            {/* Grid 3 columnas en md+ */}
+                            <Row className="g-3 d-none d-md-flex">
+                                {externalArticles.slice(0, 3).map((a, i) => (
+                                    <Col md={4} key={i} className="d-flex">
+                                        <Card className="custom-card article-card h-100 d-flex flex-column">
                                             <Card.Body className="d-flex flex-column">
-                                                <Card.Title>{n.title}</Card.Title>
-                                                <Card.Text className="mb-3">{n.desc}</Card.Text>
-                                                <Button href={n.link} variant="primary" className="mt-auto">
-                                                    Leer más
-                                                </Button>
+                                                <Card.Title className="mb-2">{a.title}</Card.Title>
+                                                <Card.Text className="text-muted mb-3">{a.desc}</Card.Text>
+                                                <div className="mt-auto d-flex justify-content-between align-items-center">
+                                                    <small className="text-muted">{a.source}</small>
+                                                    <Button as="a" href={a.url} target="_blank" rel="noopener noreferrer" variant="outline-primary" size="sm">
+                                                        Leer artículo
+                                                    </Button>
+                                                </div>
                                             </Card.Body>
                                         </Card>
                                     </Col>
                                 ))}
                             </Row>
+
+                            {/* Carrusel en móvil */}
+                            <div className="d-md-none">
+                                <Carousel interval={5000} indicators>
+                                    {externalArticles.slice(0, 3).map((a, i) => (
+                                        <Carousel.Item key={i}>
+                                            <Card className="custom-card article-card mx-2">
+                                                <Card.Body className="d-flex flex-column">
+                                                    <Card.Title className="mb-2">{a.title}</Card.Title>
+                                                    <Card.Text className="text-muted mb-3">{a.desc}</Card.Text>
+                                                    <div className="mt-auto d-flex justify-content-between align-items-center">
+                                                        <small className="text-muted">{a.source}</small>
+                                                        <Button as="a" href={a.url} target="_blank" rel="noopener noreferrer" variant="outline-primary" size="sm">
+                                                            Leer artículo
+                                                        </Button>
+                                                    </div>
+                                                </Card.Body>
+                                            </Card>
+                                        </Carousel.Item>
+                                    ))}
+                                </Carousel>
+                            </div>
+
                         </Col>
                     </Row>
                 </section>
-
             </Container>
         </div>
     );

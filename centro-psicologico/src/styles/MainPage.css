@@ -199,3 +199,28 @@
   color: white;
 }
 
+/* Cards de artículos más compactas */
+.article-card {
+  border-radius: 14px;
+}
+
+.article-card .card-body {
+  padding: 0.9rem 1rem;
+}
+
+.article-card .card-title {
+  font-size: 0.98rem;
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+}
+
+.article-card .card-text {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.6rem;
+}
+
+.article-card .btn {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}

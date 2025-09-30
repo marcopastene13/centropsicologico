@@ -106,3 +106,66 @@ h3 { font-weight: 600; }
 .navbar-nav .nav-link.active {
   color: #9271c2 !important;
 }
+
+.brand-stacked img {
+  max-height: 64px;
+}
+
+.brand-text {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.brand-text span {
+  font-family: "Nunito", sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem; /* ajusta a gusto */
+  color: #52796f;
+  letter-spacing: 0.3px;
+}
+
+/* Opcional: resaltar 'Centenario' */
+.brand-text span:last-child {
+  color: #84a98c;
+}
+
+/* Evita alturas forzadas en móviles */
+@media (max-width: 767.98px) {
+  .about-news-section .row.align-items-stretch {
+    height: auto !important;
+  }
+  .about-card,
+  .news-card {
+    height: auto !important;
+  }
+  /* Si alguna vez usaste sticky-top en tarjetas dentro del main, desactívalo en móvil */
+  .sticky-top {
+    position: static !important;
+  }
+  /* Asegura separación respecto al footer */
+  .mainpage-container {
+    padding-bottom: 4.5rem;
+  }
+}
+
+/* Asegura que columnas de noticias apilen correctamente en xs */
+@media (max-width: 767.98px) {
+  .about-news-section .col-md-4,
+  .about-news-section .col-md-6 {
+    display: block;
+  }
+}
+
+/* Cards de noticias: que respeten el flujo y no “empujen” */
+.news-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Footer sobre capas: que siempre quede por encima si hay overlays absolutos */
+footer.footer {
+  position: relative;
+  z-index: 1;
+}
