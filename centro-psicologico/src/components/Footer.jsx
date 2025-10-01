@@ -10,7 +10,7 @@ export default function Footer() {
           <Col md={4} className="mb-3">
             <h5 className="text-dark">Centro Psicológico Centenario</h5>
             <p>
-              Av. Libertador 123, Osorno<br />
+              General Ordoñez 155 of.1104<br />
               Tel: +56 9 1234 5678<br />
               Email: consultapsicologica@gmail.com
             </p>
@@ -29,7 +29,7 @@ export default function Footer() {
           <Col md={4} className="mb-3">
             <h5 className="text-dark">Síguenos</h5>
             <div className="d-flex gap-3">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted fs-4">
+              <a href="https://www.facebook.com/psicologasmaipu/" target="_blank" rel="noopener noreferrer" className="text-muted fs-4">
                 <i className="bi bi-facebook"></i>
               </a>
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-muted fs-4">
