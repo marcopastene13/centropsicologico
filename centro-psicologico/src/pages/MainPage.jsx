@@ -13,7 +13,7 @@ const professionals = [
         id: 2,
         name: "Yasna Valdes",
         desc: "Psicólogo infantil y adolescente con enfoque en terapia familiar.",
-        img: "/images/maria.jpg"
+        img: "/images/yasna.jpg"
     },
     {
         id: 3,

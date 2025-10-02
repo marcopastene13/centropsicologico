@@ -39,7 +39,7 @@ const professionals = [
     id: 2,
     name: "Yasna Valdes",
     title: "Psicólogo Infantil",
-    img: "/images/carlos.jpg",
+    img: "/images/yasna.jpg",
     whatsapp: "56987654321",
     bio: "Especialista en psicología infantil y adolescente con enfoque en terapia familiar. Experto en el tratamiento de TDAH, trastornos del espectro autista y problemas de conducta.",
     specialties: ["Psicología Infantil", "TDAH", "Trastornos del Espectro Autista", "Terapia Familiar"],
