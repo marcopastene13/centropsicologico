@@ -41,12 +41,26 @@ const professionals = [
     title: "Psicólogo Infantil",
     img: "/images/yasna.jpg",
     whatsapp: "56987654321",
-    bio: "Especialista en psicología infantil y adolescente con enfoque en terapia familiar. Experto en el tratamiento de TDAH, trastornos del espectro autista y problemas de conducta.",
+    bio: "Psicóloga clínica egresada con distinción máxima con más de 10 años de experiencia. Especialista en tratamiento de procesos de reparación en vulneración de derechos, abordaje de trastornos del ánimo y conducta. Experta en psicodiagnóstico y trabajo en equipos multidisciplinarios.",
     specialties: ["Psicología Infantil", "TDAH", "Trastornos del Espectro Autista", "Terapia Familiar"],
     education: [
-      "Psicólogo, Universidad Católica (2010)",
-      "Magíster en Psicología Infantil, UDP (2013)",
-      "Certificación en Terapia ABA (2016)"
+    "Psicóloga clínica",
+    "Diplomada en Salud Mental",
+    "Diplomada en Pruebas Psicológicas y Proyectivas",
+    "Post-título en Infancia, Adolescencia y Familia",
+    "Diplomada en Derechos Humanos",
+    "Diplomada en Drogodependencias y Reducción de Daños",
+    "Diplomada en Peritaje Social y Psicológico",
+    "Diploma en Herramientas Psicolaborales",
+    "Diplomada en Neurodesarrollo"],
+    certifications:[
+    "Acreditada en Test WISC-V",
+    "Acreditada en Test ADOS-2",
+    "Acreditada en Test ADI-R",
+    "Zulliger",
+    "PBLL",
+    "TRO",
+    "CAT-A/H"
     ],
      scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
     workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
@@ -224,7 +238,17 @@ export default function ProfessionalDetail() {
                     <ul className="mb-0">
                       {professional.education.map((e, i) => (
                         <li key={i}>{e}</li>
-                      ))}
+                      )
+                      )}
+                    </ul>
+                  </div>
+                  <div>
+                    <h6>Certificaciones y Acreditaciones</h6>
+                    <ul className="mb-0">
+                      {professional.certifications.map((e, i) => (
+                        <li key={i}>{e}</li>
+                      )
+                      )}
                     </ul>
                   </div>
                 </Card.Body>
