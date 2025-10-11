@@ -62,7 +62,7 @@ export default function AdminEditPanel({ token, onLogout }) {
   };
 
   return (
-    <div className="admin-edit-panel">
+    <div className="admin-edit-panel ">
       <button onClick={onLogout} style={{ float: "right" }}>Cerrar sesión</button>
       <h2>Edita un perfil</h2>
       <select value={selectedId} onChange={e => handleSelect(e.target.value)}>
@@ -105,7 +105,7 @@ export default function AdminEditPanel({ token, onLogout }) {
 
       <style>{`
         .admin-edit-panel {
-          max-width: 420px;
+          max-width: 700px;
           margin: 60px auto;
           background: #fff;
           padding: 26px 32px 32px 32px;
