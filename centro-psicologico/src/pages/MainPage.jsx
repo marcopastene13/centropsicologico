@@ -81,9 +81,9 @@ export default function MainPage() {
                             <h3 className="section-subtitle mb-4">Sobre Nosotros</h3>
                             <Card className="custom-card about-card flex-grow-1">
                                 <div className="p-4">
-                                    Somos un equipo multidisciplinario comprometido con tu bienestar
-                                    mental y emocional. Nuestro objetivo es brindar atención personalizada
-                                    y un entorno seguro para cada paciente.
+                                    Somos un equipo multidisciplinario dedicado a tu bienestar emocional.
+                                    Brindamos atención personalizada y profesional para acompañarte en tu proceso de crecimiento,
+                                    ofreciendo un espacio seguro, ético y respetuoso para impulsar cambios positivos en tu vida.
                                 </div>
                                 <Card.Footer className="bg-transparent border-0 mt-auto">
                                     <Button href="/sobrenosotros" variant="primary" className="mt-3 w-100">
@@ -108,7 +108,7 @@ export default function MainPage() {
                                                 <div className="mt-auto d-flex justify-content-between align-items-center">
                                                     <small className="text-muted">{a.source}</small>
                                                     <Button as="a" href={a.url} target="_blank" rel="noopener noreferrer" variant="outline-primary" size="sm">
-                                                        Leer artículo
+                                                        Leer
                                                     </Button>
                                                 </div>
                                             </Card.Body>

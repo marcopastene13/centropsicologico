@@ -16,13 +16,13 @@ const contactInfo = [
   },
   {
     title: "Dirección",
-    value: "Av. Libertador 123, Osorno",
+    value: "Gral. Ordóñez 155, of. 1104",
     icon: "📍",
-    link: "https://maps.google.com"
+    link: "https://maps.app.goo.gl/xqfQvmWpq45gDET8A"
   },
   {
     title: "Horarios",
-    value: "Lun-Vie: 9:00-18:00",
+    value: "Lun-Vie: 9:00-21:00",
     icon: "🕒",
     link: null
   }
@@ -66,7 +66,6 @@ export default function ContactPage() {
       <Row>
         {/* Información de contacto */}
         <Col md={4} className="mb-4">
-          <h3 className="mb-4">Información de Contacto</h3>
           
           {contactInfo.map((info, index) => (
             <Card key={index} className="custom-card mb-3">

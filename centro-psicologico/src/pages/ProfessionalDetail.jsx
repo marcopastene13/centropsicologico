@@ -12,7 +12,7 @@ const professionals = [
     img: "/images/patty.jpg",
     whatsapp: "56986431293",
     bio: "Patricia Santander, Directora y Psicóloga Clínica desde 2016 en Maipú, especialista en psicodiagnóstico, terapia individual y víctimas de ASI. También ejerce como Perito Judicial Forense, elaborando informes y evaluaciones en contextos penales y familiares.",
-    specialties: ["Trastornos de Ansiedad", "Depresión", "Terapia Cognitivo-Conductual", "Terapia de Adultos"],
+    specialties: ["Psicodiagnóstico avanzado", "Depresión", "Peritaje judicial forense", "Evaluación en contextos penales y familiares"],
     education: [
       "Diplomado en Peritaje Psicológico y Social en Contexto Judicial | Universidad Andrés Bello (UNAB) | 2023",
       "Diplomado Internacional Estrategias Clínicas Terapia Breve | ADIPA | 2021",
@@ -32,8 +32,7 @@ const professionals = [
     },
     booked: {
     },
-    priceInPerson: 30000,
-    priceOnline: 25000
+    modalities: ["presencial", "online"],
   },
   {
     id: 2,
@@ -44,33 +43,31 @@ const professionals = [
     bio: "Psicóloga clínica egresada con distinción máxima con más de 10 años de experiencia. Especialista en tratamiento de procesos de reparación en vulneración de derechos, abordaje de trastornos del ánimo y conducta. Experta en psicodiagnóstico y trabajo en equipos multidisciplinarios.",
     specialties: ["Psicología Infantil", "TDAH", "Trastornos del Espectro Autista", "Terapia Familiar"],
     education: [
-    "Psicóloga clínica",
-    "Diplomada en Salud Mental",
-    "Diplomada en Pruebas Psicológicas y Proyectivas",
-    "Post-título en Infancia, Adolescencia y Familia",
-    "Diplomada en Derechos Humanos",
-    "Diplomada en Drogodependencias y Reducción de Daños",
-    "Diplomada en Peritaje Social y Psicológico",
-    "Diploma en Herramientas Psicolaborales",
-    "Diplomada en Neurodesarrollo"],
-    certifications:[
-    "Acreditada en Test WISC-V",
-    "Acreditada en Test ADOS-2",
-    "Acreditada en Test ADI-R",
-    "Zulliger",
-    "PBLL",
-    "TRO",
-    "CAT-A/H"
+      "Psicóloga clínica",
+      "Diplomada en Salud Mental",
+      "Diplomada en Pruebas Psicológicas y Proyectivas",
+      "Post-título en Infancia, Adolescencia y Familia",
+      "Diplomada en Derechos Humanos",
+      "Diplomada en Drogodependencias y Reducción de Daños",
+      "Diplomada en Peritaje Social y Psicológico",
+      "Diploma en Herramientas Psicolaborales",
+      "Diplomada en Neurodesarrollo",
+      "Acreditada en Test WISC-V",
+      "Acreditada en Test ADOS-2",
+      "Acreditada en Test ADI-R",
+      "Zulliger",
+      "PBLL",
+      "TRO",
+      "CAT-A/H"
     ],
-     scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
+    scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
     workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
     slots: { start: "09:00", end: "20:00", intervalMins: 60 }, // cada 60m
     exceptions: {
     },
     booked: {
     },
-    priceInPerson: 30000,
-    priceOnline: 25000
+    modalities: ["presencial", "online"],
   },
   {
     id: 3,
@@ -78,28 +75,27 @@ const professionals = [
     title: "Psicólogo Infantil",
     img: "/images/stephany.jpg",
     whatsapp: "56987654321",
-    bio: "Especialista en psicología infantil y adolescente con enfoque en terapia familiar. Experto en el tratamiento de TDAH, trastornos del espectro autista y problemas de conducta.",
+    bio: "Con formación en psicología clínica y especialización en el ámbito infanto juvenil, Stephany Troncoso se destaca por su enfoque integral y empático en la atención de niños, niñas y adolescentes. Posee diplomados en Etnicidad y Género y en Terapia Infanto Juvenil, que respaldan su mirada inclusiva y respetuosa de la diversidad.",
     specialties: ["Psicología Infantil", "TDAH", "Trastornos del Espectro Autista", "Terapia Familiar"],
     education: [
-      "Psicólogo, Universidad Católica (2010)",
-      "Magíster en Psicología Infantil, UDP (2013)",
-      "Certificación en Terapia ABA (2016)"
+      "Psicóloga Clínica Infanto Juvenil.",
+      "Diplomado en Etnicidad y Género.",
+      "Diplomado en Terapia Infanto Juvenil.",
+      "Formación continua en temáticas de desarrollo infantil, habilidades parentales y salud mental adolescente.",
+      "Participación en seminarios sobre regulación emocional, autoestima y orientación vocacional."
     ],
-     scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
+    scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
     workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
     slots: { start: "09:00", end: "20:00", intervalMins: 60 }, // cada 60m
     exceptions: {
     },
     booked: {
     },
-    priceInPerson: 30000,
-    priceOnline: 25000
-  }
+    modalities: ["presencial"],
+  },
 ];
 
 // Utils
-const CLP = (n) =>
-  n?.toLocaleString("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 });
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 const toKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
@@ -196,23 +192,11 @@ export default function ProfessionalDetail() {
                     style={{ height: "300px", objectFit: "cover" }}
                     className="rounded-start"
                   />
-                  {/* Valores de atención bajo la foto */}
-                  {(professional.priceInPerson || professional.priceOnline) && (
-                    <div className="p-3 border-top">
-                      {professional.priceInPerson && (
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span className="text-muted">Presencial</span>
-                          <Badge bg="light" text="dark">{CLP(professional.priceInPerson)}</Badge>
-                        </div>
-                      )}
-                      {professional.priceOnline && (
-                        <div className="d-flex justify-content-between align-items-center">
-                          <span className="text-muted">Online</span>
-                          <Badge bg="light" text="dark">{CLP(professional.priceOnline)}</Badge>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <div className="p-3 border-top text-center">
+                    <span className="text-muted" style={{ fontWeight: "600" }}>
+                      {`Atiende ${professional.modalities.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(" y ")}`}
+                    </span>
+                  </div>
                 </Col>
               )}
               <Col md={professional.img ? 8 : 12}>
@@ -237,15 +221,6 @@ export default function ProfessionalDetail() {
                     <h6>Formación</h6>
                     <ul className="mb-0">
                       {professional.education.map((e, i) => (
-                        <li key={i}>{e}</li>
-                      )
-                      )}
-                    </ul>
-                  </div>
-                  <div>
-                    <h6>Certificaciones y Acreditaciones</h6>
-                    <ul className="mb-0">
-                      {professional.certifications.map((e, i) => (
                         <li key={i}>{e}</li>
                       )
                       )}

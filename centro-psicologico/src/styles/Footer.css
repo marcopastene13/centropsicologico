@@ -10,16 +10,6 @@
   color: #3a5a40;
 }
 
-.footer a {
-  color: #52796f;
-  transition: color 0.3s;
-  text-decoration: none;
-}
-
-.footer a:hover {
-  color: #e9c46a;
-}
-
 .footer ul li {
   margin-bottom: 0.5rem;
 }
@@ -31,3 +21,16 @@
 .footer .text-center {
   color: #b9b68c;
 }
+
+.footer a {
+  color: #6b6b6b;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-weight: 600;
+}
+
+.footer a:hover {
+  color: #9271c2 !important;  /* lila pastel */
+  text-decoration: underline dotted;
+}
+

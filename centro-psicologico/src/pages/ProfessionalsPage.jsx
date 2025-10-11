@@ -7,19 +7,19 @@ const professionals = [
     name: "Patricia Santander",
     desc: "Psicóloga clínica especializada en terapia de adultos y manejo de ansiedad. 10 años de experiencia.",
     img: "/images/patty.jpg",
-    specialties: ["Ansiedad", "Depresión", "Terapia de adultos"]
+    specialties: ["Peritaje judicial forense", "Depresión", "Terapia de adultos"]
   },
   {
     id: 2,
     name: "Yasna Valdes",
-    desc: "Psicólogo infantil y adolescente con enfoque en terapia familiar. Especialista en TDAH.",
+    desc: "Psicóloga clínica con más de 10 años en reparación de derechos, diagnóstico y manejo de trastornos.",
     img: "/images/yasna.jpg",
-    specialties: ["Psicología infantil", "TDAH", "Terapia familiar"]
+    specialties: ["Psicodiagnóstico", "TDAH", "Vulneración de derechos"]
   },
   {
     id: 3,
     name: "Stephany Troncoso",
-    desc: "Psicólogo infantil y adolescente con enfoque en terapia familiar. Especialista en TDAH.",
+    desc: "Psicóloga clínica infanto juvenil, especializada en trastornos emocionales, conducta, desarrollo y orientación familiar y vocacional.",
     img: "/images/stephany.jpg",
     specialties: ["Psicología infantil", "TDAH", "Terapia familiar"]
   }
