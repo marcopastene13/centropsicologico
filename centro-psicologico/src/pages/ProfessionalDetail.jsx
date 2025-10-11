@@ -12,7 +12,7 @@ const professionals = [
     img: "/images/patty.jpg",
     whatsapp: "56986431293",
     bio: "Patricia Santander, Directora y Psicóloga Clínica desde 2016 en Maipú, especialista en psicodiagnóstico, terapia individual y víctimas de ASI. También ejerce como Perito Judicial Forense, elaborando informes y evaluaciones en contextos penales y familiares.",
-    specialties: ["Psicodiagnóstico avanzado", "Depresión", "Peritaje judicial forense", "Evaluación en contextos penales y familiares"],
+    specialties: ["Psicodiagnóstico avanzado", "Ley Karin", "Peritaje judicial forense", "Evaluación en contextos penales y familiares"],
     education: [
       "Diplomado en Peritaje Psicológico y Social en Contexto Judicial | Universidad Andrés Bello (UNAB) | 2023",
       "Diplomado Internacional Estrategias Clínicas Terapia Breve | ADIPA | 2021",
@@ -23,7 +23,8 @@ const professionals = [
       "Seminario “Expresiones de la Violencia de Género” | Universidad de Concepción (UDC) | 2015",
       "Seminario “Autocuidado y Manejo de las Emociones en Niños Preadolescentes” | Universidad de Las Américas(UDLA) | 2013",
       "Seminario “Apego en la Primera Infancia” | Universidad de Chile (UDCH) | 2012",
-      "Cátedra Grafología | Universidad de Las Américas (UDLA) | 2012"
+      "Cátedra Grafología | Universidad de Las Américas (UDLA) | 2012",
+      "Especialización en investigación Ley Karin con perspectiva de género"
     ],
     scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
     workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes

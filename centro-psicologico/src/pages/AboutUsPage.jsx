@@ -9,7 +9,7 @@ const teamValues = [
   {
     title: "Profesionalismo",
     desc: "Nuestro equipo cuenta con la formación y experiencia necesaria para brindar el mejor servicio.",
-    icon: "👨‍⚕️"
+    icon: "👩🏻‍⚕️"
   },
   {
     title: "Confidencialidad",
@@ -101,7 +101,7 @@ export default function AboutUsPage() {
               </Card.Title>
               <Card.Text>
                 <p>
-                  El Centro Psicológico Centenario nació en 2020 con el objetivo de
+                  El Centro Psicológico Centenario nació en 2015 con el objetivo de
                   ofrecer servicios de salud mental accesibles y de calidad a nuestra comunidad.
                   Desde nuestros inicios, hemos mantenido un enfoque integral que considera
                   las necesidades únicas de cada paciente.

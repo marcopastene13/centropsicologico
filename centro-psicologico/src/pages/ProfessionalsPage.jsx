@@ -7,7 +7,7 @@ const professionals = [
     name: "Patricia Santander",
     desc: "Psicóloga clínica especializada en terapia de adultos y manejo de ansiedad. 10 años de experiencia.",
     img: "/images/patty.jpg",
-    specialties: ["Peritaje judicial forense", "Depresión", "Terapia de adultos"]
+    specialties: ["Peritaje judicial forense", "Ley Karin", "Terapia de adultos"]
   },
   {
     id: 2,
@@ -74,7 +74,7 @@ export default function ProfessionalsPage() {
       </Row>
       
       <div className="text-center mt-5">
-        <Button href="/contact" variant="outline-primary" size="lg" color="#9271c2">
+        <Button href="/contacto" variant="outline-primary" size="lg" color="#9271c2">
           ¿No encuentras lo que buscas? Contáctanos
         </Button>
       </div>

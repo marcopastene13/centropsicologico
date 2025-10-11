@@ -11,7 +11,7 @@ export default function Footer() {
             <p>
               General Ordoñez 155 of.1104<br />
               Tel: +56 9 1234 5678<br />
-              Email: <a href="mailto:consultapsicologica@gmail.com" className="text-muted text-decoration-none">consultapsicologica@gmail.com</a>
+              Email: <a href="mailto:cconsultapsicologica@gmail.com" className="text-muted text-decoration-none">cconsultapsicologica@gmail.com</a>
             </p>
           </Col>
 

@@ -10,9 +10,9 @@ const contactInfo = [
   },
   {
     title: "Email",
-    value: "consultapsicologica@gmail.com",
+    value: "cconsultapsicologica@gmail.com",
     icon: "📧",
-    link: "mailto:contacto@centenario.cl"
+    link: "mailto:cconsultapsicologica@gmail.com"
   },
   {
     title: "Dirección",
