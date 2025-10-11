@@ -2,44 +2,34 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig({
-  plugins: [
-    react(),
-    VitePWA({
-      registerType: "autoUpdate",
-      manifest: {
-        name: "Centro Psicológico Centenario",
-        short_name: "Centenario",
-        description: "Centro Psicológico que inspira relajación y confianza",
-        theme_color: "#84a98c",
-        background_color: "#f5f7fa",
-        display: "standalone",
-        start_url: ".",
-        icons: [
-          {
-            src: "logo192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "logo512.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-        ],
-      },
-      workbox: {
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-fonts-stylesheets",
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+export default defineConfig(({ command }) => {
+  return {
+    plugins: [
+      react(),
+      // El plugin PWA solo se activa en build (producción)
+      command === "build" ? VitePWA({
+        registerType: "autoUpdate",
+        manifest: {
+          short_name: "CentroPsicologico",
+          name: "Centro Psicológico Centenario",
+          icons: [
+            {
+              src: "logo192.png",
+              sizes: "192x192",
+              type: "image/png",
             },
-          },
-        ],
-      },
-    }),
-  ],
+            {
+              src: "logo512.png",
+              sizes: "512x512",
+              type: "image/png",
+            },
+          ],
+          start_url: "./",
+          display: "standalone",
+          theme_color: "#286672",
+          background_color: "#ffffff"
+        }
+      }) : null
+    ]
+  };
 });
