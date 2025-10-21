@@ -1,4 +1,4 @@
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Container, Row, Col, Card, Carousel } from "react-bootstrap";
 
 const teamValues = [
   {
@@ -22,6 +22,11 @@ const teamValues = [
     icon: "❤️"
   }
 ];
+const fotosCentro = [
+  '/images/centro1.jpg',
+  '/images/centro2.jpg',
+  '/images/centro3.jpg'
+];
 
 export default function AboutUsPage() {
   return (
@@ -30,10 +35,27 @@ export default function AboutUsPage() {
       <div className="text-center mb-5">
         <h1 className="display-4 mb-3">Sobre Nosotros</h1>
         <p className="lead">
-          Conoce más sobre nuestra misión, visión y el equipo que trabaja por tu bienestar
+          Conoce más sobre nuestro centro, nuestra misión, visión y el equipo que trabaja por tu bienestar
         </p>
       </div>
 
+      {/* Carrusel de fotos del centro */}
+      <h2 className="text-center mb-4">Nuestro Centro</h2>
+      <Row className="justify-content-center mb-5">
+        <Col md={8}>
+          <Carousel>
+            {fotosCentro.map((src, idx) => (
+              <Carousel.Item key={src}>
+                <img className="d-block w-100" src={src} alt={`Foto ${idx + 1}`} />
+                {/* Si quieres agregar caption, agrega aquí */}
+                {/* <Carousel.Caption>
+            <h5>Texto opcional</h5>
+          </Carousel.Caption> */}
+              </Carousel.Item>
+            ))}
+          </Carousel>
+        </Col>
+      </Row>
       {/* Misión y Visión */}
       <Row className="mb-5">
         <Col md={6} className="mb-4">
@@ -61,7 +83,7 @@ export default function AboutUsPage() {
                 <h3 className="mt-2">Nuestra Visión</h3>
               </Card.Title>
               <Card.Text>
-                Ser un referente en atención psicológica integral y humanizada, 
+                Ser un referente en atención psicológica integral y humanizada,
                 reconocidos por nuestro compromiso con la calidad, la calidez y la innovación terapéutica.
                 Aspiramos a construir un espacio donde la salud mental sea prioridad, fomentando comunidades más conscientes,
                 empáticas y emocionalmente sanas.
