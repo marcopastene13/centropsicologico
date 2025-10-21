@@ -23,9 +23,7 @@ const teamValues = [
   }
 ];
 const fotosCentro = [
-  '/images/centro1.jpg',
-  '/images/centro2.jpg',
-  '/images/centro3.jpg'
+  '/images/centro1.jpg'
 ];
 
 export default function AboutUsPage() {
