@@ -1,5 +1,7 @@
 import { Container, Form, Button, Row, Col, Card } from "react-bootstrap";
 import { useState } from "react";
+import emailjs from '@emailjs/browser';
+
 
 const contactInfo = [
   {
@@ -27,6 +29,24 @@ const contactInfo = [
     link: null
   }
 ];
+
+function sendEmail(e) {
+  e.preventDefault();
+
+  emailjs.sendForm(
+    "TU_SERVICE_ID",    // Reemplaza con tu Service ID
+    "TU_TEMPLATE_ID",   // Reemplaza con tu Template ID
+    e.target,
+    "TU_USER_ID"        // Reemplaza con tu User ID
+  )
+  .then(() => {
+    alert("¡Mensaje enviado con éxito! Nos contactaremos contigo pronto.");
+    e.target.reset();
+  })
+  .catch(() => {
+    alert("Error al enviar el mensaje. Intenta nuevamente.");
+  });
+}
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -128,7 +148,7 @@ export default function ContactPage() {
             <Card.Body>
               <Card.Title className="mb-4">Envíanos un Mensaje</Card.Title>
               
-              <Form onSubmit={handleSubmit}>
+              <Form onSubmit={sendEmail}>
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
