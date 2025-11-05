@@ -6,9 +6,9 @@ import emailjs from '@emailjs/browser';
 const contactInfo = [
   {
     title: "Teléfono",
-    value: "+56 9 1234 5678",
+    value: "+56 9 3273 6893",
     icon: "📞",
-    link: "tel:+56912345678"
+    link: "tel:+56932736893"
   },
   {
     title: "Email",

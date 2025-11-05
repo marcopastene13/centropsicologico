@@ -10,7 +10,7 @@ const professionals = [
     name: "Patricia Santander",
     title: "Psicóloga Clínica",
     img: "/images/patty.jpg",
-    whatsapp: "56986431293",
+    whatsapp: "56932736893",
     bio: "Patricia Santander, Directora y Psicóloga Clínica desde 2016 en Maipú, especialista en psicodiagnóstico, terapia individual y víctimas de ASI. También ejerce como Perito Judicial Forense, elaborando informes y evaluaciones en contextos penales y familiares.",
     specialties: ["Psicodiagnóstico avanzado", "Ley Karin", "Peritaje judicial forense", "Evaluación en contextos penales y familiares"],
     education: [
