@@ -16,7 +16,7 @@ app.post('/webhook', async (req, res) => {
 
   let respuesta = "";
 
-  if (incomingMsg.includes("ubicación") || incomingMsg.includes("ubicacion")) {
+  if (incomingMsg.includes("ubicación") || incomingMsg.includes("donde estan ubicados")) {
     respuesta = "Estamos en Maipú, Región Metropolitana, cerca de Plaza Maipú.";
   } else if (incomingMsg.includes("horario")) {
     respuesta = "Atendemos de lunes a viernes de 9:00 a 19:00 hrs.";
@@ -43,6 +43,7 @@ INFORMACIÓN CLAVE:
 - Puedes agendar por WhatsApp, indicando tu nombre, día, hora y motivo de consulta.
 - Consulta por precios y servicios específicos según la especialidad requerida.
 - El centro comparte artículos recientes y recursos de salud mental.
+- Los valores de la consulta son desde los $20.000 hasta los $50.000
 
 Si no puedes responder una consulta clínica específica, informa: “¿Quieres derivar tu caso a un profesional del equipo? Puedes agendar directamente y te orientamos”.
 
