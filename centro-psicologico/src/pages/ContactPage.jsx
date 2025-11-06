@@ -34,10 +34,10 @@ function sendEmail(e) {
   e.preventDefault();
 
   emailjs.sendForm(
-    "TU_SERVICE_ID",    // Reemplaza con tu Service ID
-    "TU_TEMPLATE_ID",   // Reemplaza con tu Template ID
+    "service_ol2qqqb",    // Reemplaza con tu Service ID
+    "template_grfup76",   // Reemplaza con tu Template ID
     e.target,
-    "TU_USER_ID"        // Reemplaza con tu User ID
+    "t2XPGSWW8YS9MUwlv"        // Reemplaza con tu User ID
   )
   .then(() => {
     alert("¡Mensaje enviado con éxito! Nos contactaremos contigo pronto.");
