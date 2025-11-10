@@ -222,13 +222,13 @@ export default function ProfessionalDetail() {
     if (!isFormValid) return;
 
     try {
-      // 1. Crear transacción en backend
       const buyOrder = `ORD-${Date.now()}`;
       const sessionId = `SES-${Date.now()}`;
       const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
       const returnUrl = `${window.location.origin}/payment/confirmation`;
 
-      const createResponse = await fetch('/api/payment/create', {
+      // Llamar backend para crear transacción
+      const createResponse = await fetch('http://localhost:3000/api/payment/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -241,18 +241,23 @@ export default function ProfessionalDetail() {
 
       const { token, url } = await createResponse.json();
 
-      // 2. Guardar info de la transacción (opcional, en estado local o sessionStorage)
+      // Guardar datos en sessionStorage
       sessionStorage.setItem('transactionToken', token);
       sessionStorage.setItem('buyOrder', buyOrder);
       sessionStorage.setItem('formData', JSON.stringify(form));
+      sessionStorage.setItem('professional', JSON.stringify(professional));
+      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
+      sessionStorage.setItem('selectedSlot', selectedSlot);
+      sessionStorage.setItem('amount', amount);
 
-      // 3. Redirigir a Webpay
+      // Redirigir a Webpay
       window.location.href = url;
     } catch (error) {
       console.error('Error processing payment:', error);
-      alert('Error al procesar el pago');
+      alert('Error al procesar el pago. Intenta nuevamente.');
     }
   };
+
 
 
   return (
