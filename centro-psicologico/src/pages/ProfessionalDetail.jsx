@@ -4,6 +4,22 @@ import "react-calendar/dist/Calendar.css";
 import { useParams } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
 
+// Configura tus links y precios aquí
+const serviceDetails = {
+  presencial: {
+    label: "Terapia Presencial",
+    description: "Sesión presencial en consulta, espacio privado y seguro en Maipú.",
+    price: "$25.000"
+    // linkPago: "https://www.mercadopago.cl/checkout?preference_id=xxx"
+  },
+  online: {
+    label: "Terapia Online",
+    description: "Sesión por videollamada, flexibilidad para pacientes en todo Chile.",
+    price: "$20.000"
+    // linkPago: "https://www.mercadopago.cl/checkout?preference_id=yyy"
+  },
+};
+
 const professionals = [
   {
     id: 1,
@@ -99,7 +115,6 @@ const professionals = [
 // Utils
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 const toKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-
 function generateTimeSlots(start, end, intervalMins) {
   const [sh, sm] = start.split(":").map(Number);
   const [eh, em] = end.split(":").map(Number);
@@ -110,7 +125,6 @@ function generateTimeSlots(start, end, intervalMins) {
     slots.push(`${pad(cur.getHours())}:${pad(cur.getMinutes())}`);
     cur = new Date(cur.getTime() + intervalMins * 60000);
   }
-  // Elimina el último si coincide exacto con end y no quieres tomar la hora final como inicio
   if (slots.length > 1 && slots[slots.length - 1] === end) slots.pop();
   return slots;
 }
@@ -120,11 +134,12 @@ export default function ProfessionalDetail() {
   const professional = professionals.find((p) => p.id === parseInt(id));
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedModality, setSelectedModality] = useState(professional?.modalities[0]);
 
   useEffect(() => {
-    // reset slot al cambiar fecha
     setSelectedSlot(null);
   }, [selectedDate]);
+
 
   const allSlots = useMemo(() => {
     if (!professional) return [];
@@ -151,23 +166,21 @@ export default function ProfessionalDetail() {
     );
   }
 
+  // ... funciones para días y slots
   const isWeekend = (date) => {
-    const day = date.getDay(); // 0=Domingo ... 6=Sábado
+    const day = date.getDay();
     return day === 0 || day === 6;
   };
-
   const isWorkingDay = (date) => {
-    const jsDay = date.getDay(); // 0=Domingo,1=Lunes
-    // Convertimos a 1-7 con Lunes=1
+    const jsDay = date.getDay();
     const weekday = jsDay === 0 ? 7 : jsDay;
     return professional.workingDays.includes(weekday);
   };
-
   const isDisabledDay = (date) => {
     const key = toKey(date);
     if (professional.exceptions[key]) return true;
-    if (!isWorkingDay(date)) return true; // bloquea fines de semana y días no laborales
-    if (date < new Date(new Date().setHours(0, 0, 0, 0))) return true; // pasado
+    if (!isWorkingDay(date)) return true;
+    if (date < new Date(new Date().setHours(0, 0, 0, 0))) return true;
     return false;
   };
 
@@ -175,8 +188,9 @@ export default function ProfessionalDetail() {
   const bookedForDay = professional.booked[key] || [];
   const availableSlots = allSlots.filter((s) => !bookedForDay.includes(s));
 
+  // Mensaje para reserva WhatsApp
   const whatsappMessage = selectedSlot
-    ? `Hola ${professional.name}, quiero agendar una sesión el ${selectedDate.toLocaleDateString()} a las ${selectedSlot}.`
+    ? `Hola ${professional.name}, quiero agendar una sesión (${serviceDetails[selectedModality]?.label}) el ${selectedDate.toLocaleDateString()} a las ${selectedSlot}.`
     : `Hola ${professional.name}, me gustaría coordinar una sesión.`;
 
   return (
@@ -194,8 +208,8 @@ export default function ProfessionalDetail() {
                     className="rounded-start"
                   />
                   <div className="p-3 border-top text-center">
-                    <span className="text-muted" style={{ fontWeight: "600" }}>
-                      {`Atiende ${professional.modalities.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(" y ")}`}
+                    <span style={{ fontWeight: "600" }}>
+                      {`Atiende ${professional.modalities.map(m => serviceDetails[m]?.label || m).join(" y ")}`}
                     </span>
                   </div>
                 </Col>
@@ -214,6 +228,31 @@ export default function ProfessionalDetail() {
                     ))}
                   </div>
                   <Card.Text>{professional.bio}</Card.Text>
+                  <div className="mb-4">
+                    <h4>Modalidades de Servicio</h4>
+                    <Row>
+                      {professional.modalities.map((mod) => (
+                        <Col xs={12} md={6} key={mod}>
+                          <Card
+                            className={`mb-2 ${selectedModality === mod ? "border-success" : ""
+                              }`}
+                            onClick={() => setSelectedModality(mod)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <Card.Body>
+                              <Card.Title>
+                                {serviceDetails[mod]?.label || mod}
+                              </Card.Title>
+                              <Card.Text>
+                                {serviceDetails[mod]?.description}
+                              </Card.Text>
+                              <Badge bg="info">{serviceDetails[mod]?.price}</Badge>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
+                  </div>
                   <div className="mb-3">
                     <h6>Horarios de Atención:</h6>
                     <p className="text-muted">{professional.scheduleLabel}</p>
@@ -223,8 +262,7 @@ export default function ProfessionalDetail() {
                     <ul className="mb-0">
                       {professional.education.map((e, i) => (
                         <li key={i}>{e}</li>
-                      )
-                      )}
+                      ))}
                     </ul>
                   </div>
                 </Card.Body>
@@ -232,12 +270,10 @@ export default function ProfessionalDetail() {
             </Row>
           </Card>
         </Col>
-
         <Col md={4}>
           <Card className="custom-card sticky-top">
             <Card.Body>
               <Card.Title className="text-center mb-3">Reservar Sesión</Card.Title>
-
               <div className="mb-3">
                 <Calendar
                   onChange={setSelectedDate}
@@ -254,7 +290,6 @@ export default function ProfessionalDetail() {
                   </small>
                 </div>
               </div>
-
               <div className="mb-3">
                 <h6 className="mb-2">Horarios disponibles</h6>
                 {availableSlots.length === 0 ? (
@@ -276,8 +311,7 @@ export default function ProfessionalDetail() {
                   </div>
                 )}
               </div>
-
-              <div className="d-grid gap-2">
+              <div className="d-grid gap-2 mt-3">
                 <Button
                   href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
                     whatsappMessage
@@ -288,7 +322,20 @@ export default function ProfessionalDetail() {
                   size="lg"
                   disabled={!selectedSlot}
                 >
-                  Confirmar {selectedSlot ? `(${selectedSlot})` : ""}
+                  Confirmar por WhatsApp
+                </Button>
+                {/* Pago MercadoPago - reemplaza linkPago si tienes uno por modalidad */}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  href={
+                    serviceDetails[selectedModality]?.linkPago ||
+                    "https://www.mercadopago.cl/checkout"
+                  }
+                  target="_blank"
+                  disabled={!selectedSlot}
+                >
+                  Pagar sesión ahora
                 </Button>
                 <Button
                   href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
@@ -301,7 +348,6 @@ export default function ProfessionalDetail() {
                   Hacer consulta
                 </Button>
               </div>
-
               <div className="text-center mt-3">
                 <small className="text-muted">
                   Fines de semana y días no laborales aparecen bloqueados en el calendario.
