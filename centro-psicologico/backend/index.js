@@ -1,3 +1,48 @@
+const WebpayPlus = require('transbank-sdk').WebpayPlus;
+const Options = require('transbank-sdk').Options;
+const Environment = require('transbank-sdk').Environment;
+const IntegrationCommerceCodes = require('transbank-sdk').IntegrationCommerceCodes;
+const IntegrationApiKeys = require('transbank-sdk').IntegrationApiKeys;
+
+// Configurar Webpay (usa IntegrationCommerceCodes y IntegrationApiKeys para PRUEBAS)
+const tx = new WebpayPlus.Transaction(
+  new Options(
+    IntegrationCommerceCodes.WEBPAY_PLUS,
+    IntegrationApiKeys.WEBPAY,
+    Environment.Integration
+  )
+);
+
+// Endpoint para crear transacción
+app.post('/api/payment/create', async (req, res) => {
+  const { amount, buyOrder, sessionId, returnUrl } = req.body;
+
+  try {
+    const response = await tx.create(buyOrder, sessionId, amount, returnUrl);
+    res.json({
+      token: response.token,
+      url: response.url,
+    });
+  } catch (error) {
+    console.error('Error creating Webpay transaction:', error);
+    res.status(500).json({ error: 'Error creating transaction' });
+  }
+});
+
+// Endpoint para confirmar la transacción
+app.post('/api/payment/commit', async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const response = await tx.commit(token);
+    res.json(response);
+  } catch (error) {
+    console.error('Error committing Webpay transaction:', error);
+    res.status(500).json({ error: 'Error committing transaction' });
+  }
+});
+
+
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
