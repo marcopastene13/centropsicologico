@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Container, Card, Spinner, Button } from 'react-bootstrap';
 
+
 export default function PaymentConfirmation() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
+
 
   useEffect(() => {
     const confirmPayment = async () => {
@@ -26,7 +28,8 @@ export default function PaymentConfirmation() {
         const buyOrder = sessionStorage.getItem('buyOrder');
         const amount = parseInt(sessionStorage.getItem('amount'), 10);
 
-        const response = await fetch('http://localhost:3000/api/payment/commit', {
+        // ✅ AQUÍ ESTABA EL ERROR: faltaba asignar response
+        const response = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/payment/commit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -45,7 +48,7 @@ export default function PaymentConfirmation() {
         if (result.success) {
           setStatus('success');
           setMessage('Tu reserva ha sido confirmada. Revisa tu correo para los detalles.');
-          
+
           // Limpiar sessionStorage
           sessionStorage.clear();
         } else {
@@ -62,12 +65,13 @@ export default function PaymentConfirmation() {
     confirmPayment();
   }, [searchParams]);
 
+
   return (
     <Container className="mt-5">
       {status === 'loading' && (
         <Card className="text-center">
           <Card.Body>
-            <Spinner animation="border" /> 
+            <Spinner animation="border" />
             <p className="mt-2">Procesando tu pago...</p>
           </Card.Body>
         </Card>

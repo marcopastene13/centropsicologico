@@ -227,8 +227,7 @@ export default function ProfessionalDetail() {
       const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
       const returnUrl = `${window.location.origin}/payment/confirmation`;
 
-      // Llamar backend para crear transacción
-      const createResponse = await fetch('http://localhost:3000/api/payment/create', {
+      const createResponse = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/payment/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -239,7 +238,14 @@ export default function ProfessionalDetail() {
         }),
       });
 
-      const { token, url } = await createResponse.json();
+      const data = await createResponse.json();
+      console.log("Respuesta backend:", data);
+
+      if (!data.token || !data.url) {
+        throw new Error("Token o URL no recibidos del backend");
+      }
+
+      const { token, url } = data;
 
       // Guardar datos en sessionStorage
       sessionStorage.setItem('transactionToken', token);
@@ -250,15 +256,13 @@ export default function ProfessionalDetail() {
       sessionStorage.setItem('selectedSlot', selectedSlot);
       sessionStorage.setItem('amount', amount);
 
-      // Redirigir a Webpay
-      window.location.href = url;
+      // ✅ REDIRIGIR CON TOKEN EN URL
+      window.location.href = `${url}?token_ws=${token}`;
     } catch (error) {
       console.error('Error processing payment:', error);
       alert('Error al procesar el pago. Intenta nuevamente.');
     }
   };
-
-
 
   return (
     <Container className="mt-4">
@@ -422,7 +426,14 @@ export default function ProfessionalDetail() {
                     onChange={handleInputChange}
                     placeholder="+56 9 1234 5678"
                     required
+                    minLength={12}
+                    maxLength={12}
                   />
+                  {formTouched && form.telefono && form.telefono.length !== 12 && (
+                    <span style={{ color: 'red', fontSize: '0.9em' }}>
+                      El teléfono debe tener exactamente 12 caracteres (ejemplo: +56912345678)
+                    </span>
+                  )}
                 </Form.Group>
                 <Form.Group className="mb-2">
                   <Form.Label>Detalles</Form.Label>
