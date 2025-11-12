@@ -9,6 +9,12 @@ import AppNavbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Login from "./components/Login"; // crea este componente según te dí antes
 import AdminEditPanel from "./components/AdminEditPanel";
+import PaymentConfirmation from './pages/PaymentConfirmation';
+import TransferConfirmation from './pages/TransferConfirmation';
+
+// En tus rutas:
+<Route path="/payment/confirmation" element={<PaymentConfirmation />} />
+
 
 function PrivateRoute({ token, children }) {
   if (!token) return <Navigate to="/login" replace />;
@@ -47,6 +53,8 @@ export default function App() {
         <Route path="/profesionales/:id" element={<ProfessionalDetail />} />
         <Route path="/sobrenosotros" element={<AboutUsPage />} />
         <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/payment/confirmation" element={<PaymentConfirmation />} />
+        <Route path="/transfer/confirmation" element={<TransferConfirmation />} />
 
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
 

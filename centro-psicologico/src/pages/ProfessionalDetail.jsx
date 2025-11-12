@@ -1,4 +1,4 @@
-import { Container, Button, Row, Col, Card, Badge } from "react-bootstrap";
+import { Container, Button, Row, Col, Card, Badge, Form } from "react-bootstrap";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useParams } from "react-router-dom";
@@ -32,7 +32,7 @@ const professionals = [
     education: [
       "Diplomado en Peritaje Psicológico y Social en Contexto Judicial | Universidad Andrés Bello (UNAB) | 2023",
       "Diplomado Internacional Estrategias Clínicas Terapia Breve | ADIPA | 2021",
-      "Curso Peritaje Psicológico en contexto familiar  | Instituto Virtulys | 2021",
+      "Curso Peritaje Psicológico en contexto familiar  | Instituto Virtulys | 2021",
       "Curso Psicopatología Forense: Herramientas para la Evaluación Pericial Psicológica | Instituto Grupo Palermo | 2018",
       "Título Profesional de Psicóloga con Grado Académico de Licenciada en Psicología | Universidad de Las Américas(UDLA) | 2015",
       "Seminario “Psicología Forense y Jurídica” | Universidad Bernardo O'Higgins (UBO) | 2015",
@@ -136,10 +136,19 @@ export default function ProfessionalDetail() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedModality, setSelectedModality] = useState(professional?.modalities[0]);
 
+  // Form state
+  const [form, setForm] = useState({
+    nombre: "",
+    rut: "",
+    correo: "",
+    telefono: "",
+    detalles: "",
+  });
+  const [formTouched, setFormTouched] = useState(false);
+
   useEffect(() => {
     setSelectedSlot(null);
   }, [selectedDate]);
-
 
   const allSlots = useMemo(() => {
     if (!professional) return [];
@@ -166,7 +175,6 @@ export default function ProfessionalDetail() {
     );
   }
 
-  // ... funciones para días y slots
   const isWeekend = (date) => {
     const day = date.getDay();
     return day === 0 || day === 6;
@@ -190,9 +198,127 @@ export default function ProfessionalDetail() {
 
   // Mensaje para reserva WhatsApp
   const whatsappMessage = selectedSlot
-    ? `Hola ${professional.name}, quiero agendar una sesión (${serviceDetails[selectedModality]?.label}) el ${selectedDate.toLocaleDateString()} a las ${selectedSlot}.`
+    ? `Hola ${professional.name}, quiero agendar una sesión (${serviceDetails[selectedModality]?.label}) el ${selectedDate.toLocaleDateString()} a las ${selectedSlot}.\n\nNombre: ${form.nombre}\nRUT: ${form.rut}\nCorreo: ${form.correo}\nTeléfono: ${form.telefono}\nDetalles: ${form.detalles}`
     : `Hola ${professional.name}, me gustaría coordinar una sesión.`;
 
+  // Form validation
+  const isFormValid =
+    form.nombre &&
+    form.rut &&
+    form.correo &&
+    form.telefono &&
+    form.detalles &&
+    selectedSlot;
+
+  const handleInputChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+    setFormTouched(true);
+  };
+
+  const handlePayment = async () => {
+    if (!isFormValid) return;
+
+    try {
+      const buyOrder = `ORD-${Date.now()}`;
+      const sessionId = `SES-${Date.now()}`;
+      const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
+      const returnUrl = `${window.location.origin}/payment/confirmation`;
+
+      const createResponse = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/payment/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          buyOrder,
+          sessionId,
+          returnUrl,
+        }),
+      });
+
+      const data = await createResponse.json();
+      console.log("Respuesta backend:", data);
+
+      if (!data.token || !data.url) {
+        throw new Error("Token o URL no recibidos del backend");
+      }
+
+      const { token, url } = data;
+
+      // Guardar datos en sessionStorage
+      sessionStorage.setItem('transactionToken', token);
+      sessionStorage.setItem('buyOrder', buyOrder);
+      sessionStorage.setItem('formData', JSON.stringify(form));
+      sessionStorage.setItem('professional', JSON.stringify(professional));
+      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
+      sessionStorage.setItem('selectedSlot', selectedSlot);
+      sessionStorage.setItem('amount', amount);
+
+      // ✅ REDIRIGIR CON TOKEN EN URL
+      window.location.href = `${url}?token_ws=${token}`;
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      alert('Error al procesar el pago. Intenta nuevamente.');
+    }
+  };
+
+  // Función para Transferencia Electrónica
+  const handleTransferencia = async () => {
+    if (!isFormValid) return;
+
+    try {
+      const buyOrder = `ORD-${Date.now()}`;
+      const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
+
+      console.log('Iniciando transferencia electrónica...');
+
+      // Llamar backend para crear reserva con transferencia
+      const response = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formData: form,
+          professional: {
+            id: professional.id,
+            name: professional.name,
+          },
+          selectedDate: selectedDate.toISOString(),
+          selectedSlot: selectedSlot,
+          selectedModality: selectedModality,
+          amount,
+          buyOrder,
+          paymentMethod: 'TRANSFER', // Marcar como transferencia
+          status: 'PENDING', // Pendiente de confirmación
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Respuesta reserva:', data);
+
+      if (!data.id) {
+        throw new Error(data.error || 'Error al crear reserva');
+      }
+
+      // Guardar en sessionStorage
+      sessionStorage.setItem('reservationId', data.id);
+      sessionStorage.setItem('formData', JSON.stringify(form));
+      sessionStorage.setItem('professional', JSON.stringify(professional));
+      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
+      sessionStorage.setItem('selectedSlot', selectedSlot);
+      sessionStorage.setItem('amount', amount);
+      sessionStorage.setItem('buyOrder', buyOrder);
+      sessionStorage.setItem('paymentMethod', 'TRANSFER');
+
+      // Redirigir a página de transferencia
+      window.location.href = '/transfer/confirmation';
+
+    } catch (error) {
+      console.error('Error:', error);
+      alert(`Error: ${error.message}`);
+    }
+  };
   return (
     <Container className="mt-4">
       <Row>
@@ -234,8 +360,7 @@ export default function ProfessionalDetail() {
                       {professional.modalities.map((mod) => (
                         <Col xs={12} md={6} key={mod}>
                           <Card
-                            className={`mb-2 ${selectedModality === mod ? "border-success" : ""
-                              }`}
+                            className={`mb-2 ${selectedModality === mod ? "border-success" : ""}`}
                             onClick={() => setSelectedModality(mod)}
                             style={{ cursor: "pointer" }}
                           >
@@ -271,7 +396,7 @@ export default function ProfessionalDetail() {
           </Card>
         </Col>
         <Col md={4}>
-          <Card className="custom-card sticky-top">
+          <Card className="custom-card">
             <Card.Body>
               <Card.Title className="text-center mb-3">Reservar Sesión</Card.Title>
               <div className="mb-3">
@@ -311,6 +436,74 @@ export default function ProfessionalDetail() {
                   </div>
                 )}
               </div>
+
+              {/* Formulario previo al pago */}
+              <Form className="mb-3">
+                <Form.Group className="mb-2">
+                  <Form.Label>Nombre completo</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="nombre"
+                    value={form.nombre}
+                    onChange={handleInputChange}
+                    placeholder="Ingresa tu nombre completo"
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-2">
+                  <Form.Label>RUT</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="rut"
+                    value={form.rut}
+                    onChange={handleInputChange}
+                    placeholder="12.345.678-9"
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-2">
+                  <Form.Label>Correo electrónico</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="correo"
+                    value={form.correo}
+                    onChange={handleInputChange}
+                    placeholder="ejemplo@correo.com"
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-2">
+                  <Form.Label>Número de teléfono</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="telefono"
+                    value={form.telefono}
+                    onChange={handleInputChange}
+                    placeholder="+56 9 1234 5678"
+                    required
+                    minLength={12}
+                    maxLength={12}
+                  />
+                  {formTouched && form.telefono && form.telefono.length !== 12 && (
+                    <span style={{ color: 'red', fontSize: '0.9em' }}>
+                      El teléfono debe tener exactamente 12 caracteres (ejemplo: +56912345678)
+                    </span>
+                  )}
+                </Form.Group>
+                <Form.Group className="mb-2">
+                  <Form.Label>Detalles</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="detalles"
+                    value={form.detalles}
+                    onChange={handleInputChange}
+                    placeholder="Comenta brevemente tu situación"
+                    required
+                  />
+                </Form.Group>
+              </Form>
+
               <div className="d-grid gap-2 mt-3">
                 <Button
                   href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
@@ -320,23 +513,30 @@ export default function ProfessionalDetail() {
                   rel="noopener noreferrer"
                   variant="success"
                   size="lg"
-                  disabled={!selectedSlot}
+                  disabled={!isFormValid}
                 >
                   Confirmar por WhatsApp
                 </Button>
-                {/* Pago MercadoPago - reemplaza linkPago si tienes uno por modalidad */}
+
+                {/* NUEVO: BOTÓN DE TRANSFERENCIA */}
+                <Button
+                  variant="info"
+                  size="lg"
+                  onClick={handleTransferencia}
+                  disabled={!isFormValid}
+                >
+                  Pagar por Transferencia
+                </Button>
+
                 <Button
                   variant="primary"
                   size="lg"
-                  href={
-                    serviceDetails[selectedModality]?.linkPago ||
-                    "https://www.mercadopago.cl/checkout"
-                  }
-                  target="_blank"
-                  disabled={!selectedSlot}
+                  onClick={handlePayment}
+                  disabled={!isFormValid}
                 >
-                  Pagar sesión ahora
+                  Pagar con Tarjeta
                 </Button>
+
                 <Button
                   href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
                     `Hola ${professional.name}, tengo algunas preguntas sobre la terapia.`
@@ -348,6 +548,7 @@ export default function ProfessionalDetail() {
                   Hacer consulta
                 </Button>
               </div>
+
               <div className="text-center mt-3">
                 <small className="text-muted">
                   Fines de semana y días no laborales aparecen bloqueados en el calendario.
