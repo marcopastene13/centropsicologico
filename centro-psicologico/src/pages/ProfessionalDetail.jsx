@@ -264,6 +264,61 @@ export default function ProfessionalDetail() {
     }
   };
 
+  // Función para Transferencia Electrónica
+  const handleTransferencia = async () => {
+    if (!isFormValid) return;
+
+    try {
+      const buyOrder = `ORD-${Date.now()}`;
+      const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
+
+      console.log('Iniciando transferencia electrónica...');
+
+      // Llamar backend para crear reserva con transferencia
+      const response = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formData: form,
+          professional: {
+            id: professional.id,
+            name: professional.name,
+          },
+          selectedDate: selectedDate.toISOString(),
+          selectedSlot: selectedSlot,
+          selectedModality: selectedModality,
+          amount,
+          buyOrder,
+          paymentMethod: 'TRANSFER', // Marcar como transferencia
+          status: 'PENDING', // Pendiente de confirmación
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Respuesta reserva:', data);
+
+      if (!data.id) {
+        throw new Error(data.error || 'Error al crear reserva');
+      }
+
+      // Guardar en sessionStorage
+      sessionStorage.setItem('reservationId', data.id);
+      sessionStorage.setItem('formData', JSON.stringify(form));
+      sessionStorage.setItem('professional', JSON.stringify(professional));
+      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
+      sessionStorage.setItem('selectedSlot', selectedSlot);
+      sessionStorage.setItem('amount', amount);
+      sessionStorage.setItem('buyOrder', buyOrder);
+      sessionStorage.setItem('paymentMethod', 'TRANSFER');
+
+      // Redirigir a página de transferencia
+      window.location.href = '/transfer/confirmation';
+
+    } catch (error) {
+      console.error('Error:', error);
+      alert(`Error: ${error.message}`);
+    }
+  };
   return (
     <Container className="mt-4">
       <Row>
@@ -462,13 +517,24 @@ export default function ProfessionalDetail() {
                 >
                   Confirmar por WhatsApp
                 </Button>
+
+                {/* NUEVO: BOTÓN DE TRANSFERENCIA */}
+                <Button
+                  variant="info"
+                  size="lg"
+                  onClick={handleTransferencia}
+                  disabled={!isFormValid}
+                >
+                  Pagar por Transferencia
+                </Button>
+
                 <Button
                   variant="primary"
                   size="lg"
                   onClick={handlePayment}
                   disabled={!isFormValid}
                 >
-                  Pagar sesión ahora
+                  Pagar con Tarjeta
                 </Button>
 
                 <Button
@@ -482,6 +548,7 @@ export default function ProfessionalDetail() {
                   Hacer consulta
                 </Button>
               </div>
+
               <div className="text-center mt-3">
                 <small className="text-muted">
                   Fines de semana y días no laborales aparecen bloqueados en el calendario.

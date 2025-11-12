@@ -287,6 +287,7 @@ const sendConfirmationEmail = async (email, formData, professional, selectedDate
 };
 
 
+
 // ============= CREAR TRANSACCIÓN WEBPAY =============
 app.post('/api/payment/create', async (req, res) => {
   console.log("Body recibido en backend:", req.body);
@@ -346,29 +347,29 @@ app.post('/api/payment/commit', async (req, res) => {
 
     // Enviar WhatsApp
     if (formData && professional && typeof formData.telefono === "string" && formData.telefono.length > 8) {
-  try {
-    // Normaliza el número: agrega whatsapp: si no está y quita espacios extras
-    let telefonoWs = formData.telefono.trim();
-    // Asegúrate que empieza con + (WhatsApp API solo acepta formato internacional)
-    if (!telefonoWs.startsWith('+')) {
-      console.warn("⚠️ El teléfono debería tener el código internacional, e.g., +56912345678");
-      // Puedes decidir qué hacer si no tiene el +, por ejemplo agregar uno para Chile, pero si lo dejas así lo envía tal cual.
-    }
-    if (!telefonoWs.startsWith("whatsapp:")) {
-      telefonoWs = `whatsapp:${telefonoWs}`;
-    }
+      try {
+        // Normaliza el número: agrega whatsapp: si no está y quita espacios extras
+        let telefonoWs = formData.telefono.trim();
+        // Asegúrate que empieza con + (WhatsApp API solo acepta formato internacional)
+        if (!telefonoWs.startsWith('+')) {
+          console.warn("⚠️ El teléfono debería tener el código internacional, e.g., +56912345678");
+          // Puedes decidir qué hacer si no tiene el +, por ejemplo agregar uno para Chile, pero si lo dejas así lo envía tal cual.
+        }
+        if (!telefonoWs.startsWith("whatsapp:")) {
+          telefonoWs = `whatsapp:${telefonoWs}`;
+        }
 
-    const whatsappMsg = `✅ ¡Pago confirmado!\n\nOrden: ${buyOrder}\nMonto: $${amount.toLocaleString('es-CL')}\nProfesional: ${professional.name}\nFecha: ${new Date(selectedDate).toLocaleDateString('es-CL')}\nHora: ${selectedSlot}`;
-    await client.messages.create({
-      body: whatsappMsg,
-      from: process.env.TWILIO_NUMBER,
-      to: telefonoWs
-    });
-    console.log("✅ WhatsApp enviado a", telefonoWs);
-  } catch (waError) {
-    console.error("⚠️ Error WhatsApp:", waError);
-  }
-}
+        const whatsappMsg = `✅ ¡Pago confirmado!\n\nOrden: ${buyOrder}\nMonto: $${amount.toLocaleString('es-CL')}\nProfesional: ${professional.name}\nFecha: ${new Date(selectedDate).toLocaleDateString('es-CL')}\nHora: ${selectedSlot}`;
+        await client.messages.create({
+          body: whatsappMsg,
+          from: process.env.TWILIO_NUMBER,
+          to: telefonoWs
+        });
+        console.log("✅ WhatsApp enviado a", telefonoWs);
+      } catch (waError) {
+        console.error("⚠️ Error WhatsApp:", waError);
+      }
+    }
 
 
     res.json({
@@ -404,6 +405,43 @@ async function commitWithRetry(token, maxRetries = 3) {
     }
   }
 }
+
+// ============= CREAR RESERVA CON TRANSFERENCIA =============
+app.post('/api/reservations', async (req, res) => {
+  try {
+    const { formData, professional, selectedDate, selectedSlot, selectedModality, amount, buyOrder, paymentMethod, status } = req.body;
+
+    if (!formData || !professional || !selectedDate || !selectedSlot || !amount || !buyOrder) {
+      return res.status(400).json({ error: 'Faltan parámetros requeridos' });
+    }
+
+    console.log('📝 Creando reserva:', { buyOrder, formData, professional, paymentMethod, status });
+
+    // Simular guardado en BD (en producción guardas en base de datos real)
+    const reservation = {
+      id: `RES-${Date.now()}`,
+      buyOrder,
+      formData,
+      professional,
+      selectedDate,
+      selectedSlot,
+      selectedModality,
+      amount,
+      paymentMethod, // 'TRANSFER' o 'WEBPAY'
+      status, // 'PENDING', 'CONFIRMED', 'COMPLETED'
+      createdAt: new Date().toISOString(),
+    };
+
+    console.log('✅ Reserva creada:', reservation);
+
+    // Aquí puedes guardar en BD, por ahora devolvemos el objeto
+    res.json(reservation);
+
+  } catch (error) {
+    console.error('❌ Error creando reserva:', error);
+    res.status(500).json({ error: 'Error al crear reserva' });
+  }
+});
 
 // ============= WHATSAPP BOT CON GEMINI IA ============
 app.post('/webhook', async (req, res) => {
