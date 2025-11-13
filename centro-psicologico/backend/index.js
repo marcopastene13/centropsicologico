@@ -55,6 +55,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Verificar que el transporter está configurado correctamente
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ ERROR en configuración de email:', error);
+  } else {
+    console.log('✅ Email transporter verificado correctamente');
+  }
+});
+
+
 // ======== ARRAY PROFESIONALES (COPIA DIRECTA) ========
 let profesionales = [
   {
@@ -184,6 +194,11 @@ app.put("/api/profesionales/:id", authenticateToken, (req, res) => {
 
 // ============= ENVIAR EMAIL =============
 const sendConfirmationEmail = async (email, formData, professional, selectedDate, selectedSlot, buyOrder, amount) => {
+  console.log('🔍 [DEBUG] sendConfirmationEmail - Iniciando');
+  console.log('   Email destino:', email);
+  console.log('   Transporter user:', process.env.EMAIL_USER);
+  console.log('   Transporter pass exists:', !!process.env.EMAIL_PASSWORD);
+
   const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -272,19 +287,26 @@ const sendConfirmationEmail = async (email, formData, professional, selectedDate
   `;
 
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+    console.log('📤 [DEBUG] Intentando enviar email...');
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to: email,
       subject: '✅ Confirmación de Reserva - Centro Psicológico Centenario',
       html: htmlContent,
     });
-    console.log(`📧 Email enviado exitosamente a ${email}`);
+    console.log('✅ [SUCCESS] Email enviado exitosamente');
+    console.log('   Response:', info.response);
     return true;
   } catch (error) {
-    console.error('❌ Error enviando email:', error);
+    console.error('❌ [ERROR] Error enviando email al cliente:', {
+      mensaje: error.message,
+      codigo: error.code,
+      respuesta: error.response,
+    });
     return false;
   }
 };
+
 
 
 
@@ -310,7 +332,7 @@ app.post('/api/payment/create', async (req, res) => {
   }
 });
 
-// ============= ENDPOINT DE COMMIT (compatibilidad con frontend existente) =============
+// ============= ENDPOINT DE COMMIT (WEBPAY) =============
 app.post('/api/payment/commit', async (req, res) => {
   console.log("Body recibido en commit:", req.body);
   try {
@@ -331,9 +353,10 @@ app.post('/api/payment/commit', async (req, res) => {
 
     console.log("✔️ Transacción confirmada:", response);
 
-    // Enviar email
+    // ✅ ENVIAR EMAILS A CLIENTE Y CENTRO
     if (formData && professional) {
-      const emailSent = await sendConfirmationEmail(
+      // Email al cliente
+      const clientEmailSent = await sendConfirmationEmail(
         formData.correo,
         formData,
         professional,
@@ -342,18 +365,28 @@ app.post('/api/payment/commit', async (req, res) => {
         buyOrder,
         amount
       );
-      console.log("📧 Email enviado:", emailSent);
+      console.log("📧 Email al cliente enviado:", clientEmailSent);
+
+      // Email al centro
+      const centerEmailSent = await sendCenterNotificationEmail(
+        process.env.CENTER_EMAIL,
+        formData,
+        professional,
+        new Date(selectedDate),
+        selectedSlot,
+        buyOrder,
+        amount,
+        'WEBPAY' // método de pago
+      );
+      console.log("📧 Email al centro enviado:", centerEmailSent);
     }
 
     // Enviar WhatsApp
     if (formData && professional && typeof formData.telefono === "string" && formData.telefono.length > 8) {
       try {
-        // Normaliza el número: agrega whatsapp: si no está y quita espacios extras
         let telefonoWs = formData.telefono.trim();
-        // Asegúrate que empieza con + (WhatsApp API solo acepta formato internacional)
         if (!telefonoWs.startsWith('+')) {
-          console.warn("⚠️ El teléfono debería tener el código internacional, e.g., +56912345678");
-          // Puedes decidir qué hacer si no tiene el +, por ejemplo agregar uno para Chile, pero si lo dejas así lo envía tal cual.
+          console.warn("⚠️ El teléfono debería tener el código internacional");
         }
         if (!telefonoWs.startsWith("whatsapp:")) {
           telefonoWs = `whatsapp:${telefonoWs}`;
@@ -371,7 +404,6 @@ app.post('/api/payment/commit', async (req, res) => {
       }
     }
 
-
     res.json({
       success: true,
       message: 'Pago confirmado exitosamente',
@@ -382,6 +414,7 @@ app.post('/api/payment/commit', async (req, res) => {
     res.status(500).json({ error: 'Error confirmando transacción' });
   }
 });
+
 
 
 // ============= FUNCIÓN AUXILIAR: COMMIT CON REINTENTOS =============
@@ -405,6 +438,111 @@ async function commitWithRetry(token, maxRetries = 3) {
     }
   }
 }
+
+// ============= ENVIAR NOTIFICACIÓN AL CENTRO =============
+const sendCenterNotificationEmail = async (centerEmail, formData, professional, selectedDate, selectedSlot, buyOrder, amount, paymentMethod) => {
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; }
+          .container { max-width: 600px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+          h2 { color: #0056b3; margin-top: 0; }
+          h3 { color: #333; border-bottom: 2px solid #0056b3; padding-bottom: 10px; }
+          .detail { margin: 12px 0; padding: 8px; background-color: #f9f9f9; border-left: 3px solid #0056b3; }
+          .label { font-weight: bold; color: #333; display: inline-block; width: 140px; }
+          .value { color: #555; }
+          .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; text-align: center; color: #666; font-size: 12px; }
+          .header-badge { display: inline-block; background-color: #28a745; color: white; padding: 8px 12px; border-radius: 4px; font-weight: bold; margin-bottom: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <span class="header-badge">📋 NUEVA RESERVA CONFIRMADA</span>
+          <h2>Nueva Cita Agendada</h2>
+          <p>Se ha confirmado una nueva cita en tu centro psicológico.</p>
+          
+          <h3>👤 Datos del Cliente:</h3>
+          <div class="detail">
+            <span class="label">Nombre:</span>
+            <span class="value">${formData.nombre}</span>
+          </div>
+          <div class="detail">
+            <span class="label">RUT:</span>
+            <span class="value">${formData.rut}</span>
+          </div>
+          <div class="detail">
+            <span class="label">Correo:</span>
+            <span class="value">${formData.correo}</span>
+          </div>
+          <div class="detail">
+            <span class="label">Teléfono:</span>
+            <span class="value">${formData.telefono}</span>
+          </div>
+
+          <h3>📅 Detalles de la Cita:</h3>
+          <div class="detail">
+            <span class="label">Profesional:</span>
+            <span class="value"><strong>${professional.name}</strong></span>
+          </div>
+          <div class="detail">
+            <span class="label">Fecha:</span>
+            <span class="value"><strong>${selectedDate.toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong></span>
+          </div>
+          <div class="detail">
+            <span class="label">Hora:</span>
+            <span class="value"><strong>${selectedSlot}</strong></span>
+          </div>
+
+          <h3>💳 Información de Pago:</h3>
+          <div class="detail">
+            <span class="label">Método:</span>
+            <span class="value">${paymentMethod === 'WEBPAY' ? '💳 Tarjeta (Webpay)' : '🏦 Transferencia Electrónica'}</span>
+          </div>
+          <div class="detail">
+            <span class="label">Monto:</span>
+            <span class="value"><strong>$${amount.toLocaleString('es-CL')}</strong></span>
+          </div>
+          <div class="detail">
+            <span class="label">Orden de Compra:</span>
+            <span class="value">${buyOrder}</span>
+          </div>
+
+          <h3>📝 Comentarios del Cliente:</h3>
+          <div class="detail">
+            <span class="value">${formData.detalles}</span>
+          </div>
+
+          <div style="background-color: #e7f3ff; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #0056b3;">
+            <p><strong>ℹ️ Nota:</strong> Un correo de confirmación también ha sido enviado al cliente con los detalles de su cita.</p>
+          </div>
+
+          <div class="footer">
+            <p><strong>Centro Psicológico Centenario</strong></p>
+            <p>General Ordoñez 155 oficina 1104, Maipú, Región Metropolitana</p>
+            <p>© 2025 Centro Psicológico Centenario. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: centerEmail,
+      subject: '📋 Nueva Reserva Confirmada - Centro Psicológico Centenario',
+      html: htmlContent,
+    });
+    console.log(`📧 Notificación enviada al centro: ${centerEmail}`);
+    return true;
+  } catch (error) {
+    console.error('❌ Error enviando notificación al centro:', error);
+    return false;
+  }
+};
 
 // ============= CREAR RESERVA CON TRANSFERENCIA =============
 app.post('/api/reservations', async (req, res) => {
@@ -440,6 +578,150 @@ app.post('/api/reservations', async (req, res) => {
   } catch (error) {
     console.error('❌ Error creando reserva:', error);
     res.status(500).json({ error: 'Error al crear reserva' });
+  }
+});
+
+// ============= ENVIAR EMAIL DE CONFIRMACIÓN PARA TRANSFERENCIA =============
+app.post('/api/send-transfer-confirmation', async (req, res) => {
+  try {
+    const { email, formData, professional, selectedDate, selectedSlot, buyOrder, amount } = req.body;
+
+    if (!email || !formData || !professional) {
+      return res.status(400).json({ error: 'Faltan parámetros' });
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; }
+            .container { max-width: 600px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            h2 { color: #28a745; margin-top: 0; }
+            h3 { color: #333; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
+            .detail { margin: 12px 0; padding: 8px; background-color: #f9f9f9; border-left: 3px solid #28a745; }
+            .label { font-weight: bold; color: #333; display: inline-block; width: 120px; }
+            .value { color: #555; }
+            .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; text-align: center; color: #666; font-size: 12px; }
+            .bank-info { background-color: #fff3cd; padding: 15px; border-radius: 4px; margin: 20px 0; border: 2px solid #ffc107; }
+            .bank-info p { margin: 8px 0; }
+            .code { background-color: #f0f0f0; padding: 8px; border-radius: 4px; font-family: monospace; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h2>✓ ¡Reserva Confirmada!</h2>
+            <p>Hola <strong>${formData.nombre}</strong>,</p>
+            <p>Tu reserva ha sido creada exitosamente. Por favor, realiza una transferencia electrónica con los datos que aparecen a continuación.</p>
+            
+            <h3>📋 Detalles de tu sesión:</h3>
+            <div class="detail">
+              <span class="label">Profesional:</span>
+              <span class="value">${professional.name}</span>
+            </div>
+            <div class="detail">
+              <span class="label">Fecha:</span>
+              <span class="value">${new Date(selectedDate).toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+            <div class="detail">
+              <span class="label">Hora:</span>
+              <span class="value">${selectedSlot}</span>
+            </div>
+            <div class="detail">
+              <span class="label">Monto a pagar:</span>
+              <span class="value"><strong>$${amount.toLocaleString('es-CL')}</strong></span>
+            </div>
+            <div class="detail">
+              <span class="label">Referencia:</span>
+              <span class="value"><strong>${buyOrder}</strong></span>
+            </div>
+
+            <h3>🏦 Datos para la Transferencia Electrónica:</h3>
+            <div class="bank-info">
+              <p><strong>Banco:</strong> Banco del Desarrollo (Banco State)</p>
+              <p><strong>Tipo de Cuenta:</strong> Cuenta Corriente</p>
+              <p><strong>Número de Cuenta:</strong> <span class="code">01234567890</span></p>
+              <p><strong>RUT:</strong> <span class="code">76.123.456-7</span></p>
+              <p><strong>Titular:</strong> Centro Psicológico Centenario</p>
+              <p><strong>Código de Referencia:</strong> <span class="code">${buyOrder}</span></p>
+            </div>
+
+            <div style="background-color: #ffe5e5; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #dc3545;">
+              <p><strong>⚠️ IMPORTANTE:</strong> En el concepto o descripción de la transferencia, <strong>DEBE incluir el código de referencia: ${buyOrder}</strong></p>
+            </div>
+
+            <h3>👤 Tus datos:</h3>
+            <div class="detail">
+              <span class="label">Nombre:</span>
+              <span class="value">${formData.nombre}</span>
+            </div>
+            <div class="detail">
+              <span class="label">RUT:</span>
+              <span class="value">${formData.rut}</span>
+            </div>
+            <div class="detail">
+              <span class="label">Correo:</span>
+              <span class="value">${formData.correo}</span>
+            </div>
+            <div class="detail">
+              <span class="label">Teléfono:</span>
+              <span class="value">${formData.telefono}</span>
+            </div>
+
+            <h3>📝 Tu situación:</h3>
+            <div class="detail">
+              <span class="value">${formData.detalles}</span>
+            </div>
+
+            <div style="background-color: #e8f5e9; padding: 15px; border-radius: 4px; margin: 20px 0;">
+              <h3 style="margin-top: 0; border: none; color: #1b5e20;">📞 Próximos pasos</h3>
+              <ul>
+                <li>Realiza la transferencia con los datos indicados arriba</li>
+                <li>Una vez confirmada la transferencia, recibirás una confirmación</li>
+                <li>Si tienes dudas, contáctanos por WhatsApp: <strong>+56 9 32736893</strong></li>
+                <li>Correo: <strong>cconsultapsicologica@gmail.com</strong></li>
+              </ul>
+            </div>
+
+            <div class="footer">
+              <p><strong>Centro Psicológico Centenario</strong></p>
+              <p>General Ordoñez 155 oficina 1104, Maipú, Región Metropolitana</p>
+              <p>© 2025 Centro Psicológico Centenario. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // ✅ ENVIAR EMAIL AL CLIENTE
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: email,
+      subject: '✅ Reserva Confirmada - Centro Psicológico Centenario',
+      html: htmlContent,
+    });
+
+    console.log(`📧 Email de transferencia enviado al cliente: ${email}`);
+
+    // ✅ ENVIAR EMAIL AL CENTRO
+    const centerEmailSent = await sendCenterNotificationEmail(
+      process.env.CENTER_EMAIL,
+      formData,
+      professional,
+      new Date(selectedDate),
+      selectedSlot,
+      buyOrder,
+      amount,
+      'TRANSFER'
+    );
+    console.log('📧 Notificación al centro enviada:', centerEmailSent);
+
+    res.json({ success: true, message: 'Emails enviados exitosamente' });
+
+  } catch (error) {
+    console.error('❌ Error enviando emails:', error);
+    res.status(500).json({ error: 'Error al enviar emails' });
   }
 });
 
@@ -515,6 +797,39 @@ app.get('/api/test-cors', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Backend funcional ✓' });
+});
+
+// ============= TEST EMAIL ENDPOINT =============
+app.post('/api/test-email', async (req, res) => {
+  console.log('🧪 TEST EMAIL - Verificando configuración');
+  console.log('   EMAIL_USER:', process.env.EMAIL_USER);
+  console.log('   EMAIL_PASSWORD existe:', !!process.env.EMAIL_PASSWORD);
+  console.log('   CENTER_EMAIL:', process.env.CENTER_EMAIL);
+
+  try {
+    console.log('📤 Enviando correo de prueba...');
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: 'tu_correo@gmail.com', // ← CAMBIA ESTO A TU EMAIL PERSONAL
+      subject: '🧪 Email de Prueba - Centro Psicológico',
+      html: '<h1>✅ ¡Si ves esto, el email FUNCIONA!</h1><p>El servidor está enviando correos correctamente.</p>',
+    });
+
+    console.log('✅ Correo de prueba enviado exitosamente');
+    res.json({ 
+      success: true, 
+      message: 'Email de prueba enviado', 
+      response: info.response 
+    });
+
+  } catch (error) {
+    console.error('❌ Error en test email:', error);
+    res.status(500).json({ 
+      error: error.message,
+      code: error.code,
+      command: error.command,
+    });
+  }
 });
 
 // ============= INICIAR SERVIDOR SOLO UNA VEZ =========
