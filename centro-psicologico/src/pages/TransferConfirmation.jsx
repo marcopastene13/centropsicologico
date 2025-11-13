@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Container, Card, Button, Alert } from 'react-bootstrap';
 
 export default function TransferConfirmation() {
   const [reservationData, setReservationData] = useState(null);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState(null);
+  const emailSentRef = useRef(false); // ✅ USAR REF PARA EVITAR DUPLICADOS
 
   useEffect(() => {
     const data = {
@@ -14,7 +17,44 @@ export default function TransferConfirmation() {
       selectedSlot: sessionStorage.getItem('selectedSlot'),
     };
     setReservationData(data);
-  }, []);
+
+    // ✅ SOLO ENVIAR UNA VEZ
+    if (data.formData.correo && !emailSentRef.current) {
+      emailSentRef.current = true;
+      sendConfirmationEmail(data);
+    }
+  }, []); // ✅ ARRAY VACÍO = SOLO UNA VEZ AL MONTAR
+
+  const sendConfirmationEmail = async (data) => {
+    try {
+      console.log('📧 Enviando email de confirmación...');
+      const response = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/send-transfer-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.formData.correo,
+          formData: data.formData,
+          professional: data.professional,
+          selectedDate: data.selectedDate,
+          selectedSlot: data.selectedSlot,
+          buyOrder: data.buyOrder,
+          amount: parseInt(data.amount),
+        }),
+      });
+
+      const result = await response.json();
+      console.log('✅ Email Response:', result);
+      
+      if (result.success) {
+        setEmailSent(true);
+      } else {
+        setEmailError(result.error || 'Error desconocido al enviar email');
+      }
+    } catch (error) {
+      console.error('❌ Error enviando email:', error);
+      setEmailError(error.message);
+    }
+  };
 
   if (!reservationData) {
     return <div>Cargando...</div>;
@@ -25,6 +65,18 @@ export default function TransferConfirmation() {
       <Card className="custom-card">
         <Card.Body>
           <h2 className="text-center mb-4">💳 Instrucciones de Transferencia Electrónica</h2>
+
+          {emailSent && (
+            <Alert variant="success" className="mb-3">
+              ✅ Se ha enviado un correo de confirmación a <strong>{reservationData.formData.correo}</strong>
+            </Alert>
+          )}
+
+          {emailError && (
+            <Alert variant="danger" className="mb-3">
+              ⚠️ Error al enviar el correo: {emailError}
+            </Alert>
+          )}
 
           <Alert variant="info">
             Tu reserva ha sido creada. Por favor, realiza una transferencia electrónica con los datos que aparecen a continuación.
