@@ -1,115 +1,107 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Container, Card, Spinner, Button } from 'react-bootstrap';
-
+import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Container, Card, Spinner, Alert, Button } from 'react-bootstrap';
 
 export default function PaymentConfirmation() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [status, setStatus] = useState('loading');
-  const [message, setMessage] = useState('');
-
+  const [paymentData, setPaymentData] = useState(null);
+  const [error, setError] = useState(null);
+  const checkPaymentRef = useRef(false); // ✅ USAR REF PARA EVITAR DUPLICADOS
 
   useEffect(() => {
-    const confirmPayment = async () => {
-      const token = searchParams.get('token_ws');
+    // ✅ SOLO EJECUTAR UNA VEZ
+    if (!checkPaymentRef.current) {
+      checkPaymentRef.current = true;
+      checkPaymentStatus();
+    }
+  }, []); // ✅ ARRAY VACÍO = SOLO UNA VEZ AL MONTAR
 
+  const checkPaymentStatus = async () => {
+    try {
+      const token = sessionStorage.getItem('transactionToken');
+      
       if (!token) {
         setStatus('error');
-        setMessage('Token de transacción no encontrado');
+        setError('No se encontró la sesión de pago');
         return;
       }
 
-      try {
-        const formData = JSON.parse(sessionStorage.getItem('formData'));
-        const professional = JSON.parse(sessionStorage.getItem('professional'));
-        const selectedDate = sessionStorage.getItem('selectedDate');
-        const selectedSlot = sessionStorage.getItem('selectedSlot');
-        const buyOrder = sessionStorage.getItem('buyOrder');
-        const amount = parseInt(sessionStorage.getItem('amount'), 10);
+      console.log('Token recibido:', token);
 
-        // ✅ AQUÍ ESTABA EL ERROR: faltaba asignar response
-        const response = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/payment/commit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token,
-            formData,
-            professional,
-            selectedDate,
-            selectedSlot,
-            buyOrder,
-            amount,
-          }),
-        });
+      // Llamar al backend para confirmar el pago
+      const response = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/payment/commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          formData: JSON.parse(sessionStorage.getItem('formData')),
+          professional: JSON.parse(sessionStorage.getItem('professional')),
+          selectedDate: sessionStorage.getItem('selectedDate'),
+          selectedSlot: sessionStorage.getItem('selectedSlot'),
+          buyOrder: sessionStorage.getItem('buyOrder'),
+          amount: parseInt(sessionStorage.getItem('amount')),
+        }),
+      });
 
-        const result = await response.json();
+      const data = await response.json();
+      console.log('Respuesta commit:', data);
 
-        if (result.success) {
-          setStatus('success');
-          setMessage('Tu reserva ha sido confirmada. Revisa tu correo para los detalles.');
-
-          // Limpiar sessionStorage
-          sessionStorage.clear();
-        } else {
-          setStatus('failed');
-          setMessage('Pago rechazado. Intenta nuevamente.');
-        }
-      } catch (error) {
-        console.error('Error confirming payment:', error);
+      if (data.success) {
+        setStatus('success');
+        setPaymentData(data.data);
+        sessionStorage.clear();
+      } else {
         setStatus('error');
-        setMessage('Error al procesar la confirmación');
+        setError(data.error || 'Error confirmando el pago');
       }
-    };
 
-    confirmPayment();
-  }, [searchParams]);
-
+    } catch (err) {
+      console.error('Error:', err);
+      setStatus('error');
+      setError(err.message);
+    }
+  };
 
   return (
     <Container className="mt-5">
-      {status === 'loading' && (
-        <Card className="text-center">
-          <Card.Body>
-            <Spinner animation="border" />
-            <p className="mt-2">Procesando tu pago...</p>
-          </Card.Body>
-        </Card>
-      )}
-      {status === 'success' && (
-        <Card className="text-center">
-          <Card.Body style={{ borderLeft: '4px solid #28a745' }}>
-            <h2 style={{ color: '#28a745' }}>✓ ¡Pago exitoso!</h2>
-            <p>{message}</p>
-            <Button onClick={() => navigate('/')} variant="success">
-              Volver al inicio
-            </Button>
-          </Card.Body>
-        </Card>
-      )}
-      {status === 'failed' && (
-        <Card className="text-center">
-          <Card.Body style={{ borderLeft: '4px solid #dc3545' }}>
-            <h2 style={{ color: '#dc3545' }}>✗ Pago rechazado</h2>
-            <p>{message}</p>
-            <Button onClick={() => navigate(-1)} variant="danger">
-              Intentar nuevamente
-            </Button>
-          </Card.Body>
-        </Card>
-      )}
-      {status === 'error' && (
-        <Card className="text-center">
-          <Card.Body style={{ borderLeft: '4px solid #ffc107' }}>
-            <h2 style={{ color: '#ffc107' }}>⚠ Error en la transacción</h2>
-            <p>{message}</p>
-            <p>Contacta con soporte: <strong>+56 9 3273 6893</strong></p>
-            <Button onClick={() => navigate('/')} variant="warning">
-              Volver al inicio
-            </Button>
-          </Card.Body>
-        </Card>
-      )}
+      <Card className="custom-card">
+        <Card.Body className="text-center">
+          {status === 'loading' && (
+            <div>
+              <Spinner animation="border" role="status" className="mb-3">
+                <span className="visually-hidden">Verificando pago...</span>
+              </Spinner>
+              <p>Verificando tu pago...</p>
+            </div>
+          )}
+
+          {status === 'success' && (
+            <div>
+              <h2 className="text-success mb-3">✓ ¡Pago Exitoso!</h2>
+              <Alert variant="success">
+                Tu sesión de terapia ha sido agendada correctamente.
+              </Alert>
+              <p>
+                <strong>Código de autorización:</strong> {paymentData?.authorization_code}
+              </p>
+              <Button href="/professionals" variant="primary" className="mt-3">
+                Volver a profesionales
+              </Button>
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div>
+              <h2 className="text-danger mb-3">⚠ Error</h2>
+              <Alert variant="danger">{error}</Alert>
+              <Button href="/professionals" variant="primary" className="mt-3">
+                Volver
+              </Button>
+            </div>
+          )}
+        </Card.Body>
+      </Card>
     </Container>
   );
 }
