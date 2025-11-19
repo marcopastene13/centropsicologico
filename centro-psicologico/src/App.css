@@ -1,3 +1,38 @@
+/* ========================================
+   FUENTE GLOBAL - Aplicar a toda la página
+   ======================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+html,
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* Asegurar que TODOS los elementos hereden la fuente */
+* {
+  font-family: inherit;
+}
+
+/* Especificar pesos de fuente para elementos comunes */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+}
+
+p, span, a, button, input, textarea, select {
+  font-weight: 400;
+}
+
+strong, b {
+  font-weight: 600;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

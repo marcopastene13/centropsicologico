@@ -2,7 +2,6 @@
 body {
   background-color: #f5f7fa;
   color: #52796f;
-  font-family: 'Merriweather', serif;
   line-height: 1.6;
   margin: 0;
   padding: 0;
@@ -64,7 +63,6 @@ body {
 
 /* Títulos */
 h1, h2, h3 {
-  font-family: 'Nunito', sans-serif;
   color: #52796f;
 }
 
@@ -118,7 +116,6 @@ h3 { font-weight: 600; }
 }
 
 .brand-text span {
-  font-family: "Nunito", sans-serif;
   font-weight: 800;
   font-size: 0.95rem; /* ajusta a gusto */
   color: #52796f;
@@ -128,6 +125,109 @@ h3 { font-weight: 600; }
 /* Opcional: resaltar 'Centenario' */
 .brand-text span:last-child {
   color: #84a98c;
+}
+
+/* Carrusel mejorado para imágenes verticales */
+.carousel-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  background: white;
+}
+
+.carousel-card-item {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.carousel-image-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 600px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0;
+  border-radius: 16px;
+}
+
+/* Botones del carrusel */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 50px;
+  height: 50px;
+  background-color: rgba(40, 167, 69, 0.85);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+  opacity: 1;
+  background-color: rgba(40, 167, 69, 1);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* Indicadores (puntos) */
+.carousel-indicators {
+  bottom: 20px;
+}
+
+.carousel-indicators button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: none;
+  transition: all 0.3s;
+}
+
+.carousel-indicators button.active {
+  background-color: #28a745;
+  width: 12px;
+  height: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .carousel-image-wrapper {
+    height: 450px;
+  }
+
+  .carousel-control-prev,
+  .carousel-control-next {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 576px) {
+  .carousel-image-wrapper {
+    height: 350px;
+  }
+
+  .carousel-control-prev,
+  .carousel-control-next {
+    width: 35px;
+    height: 35px;
+  }
 }
 
 /* Evita alturas forzadas en móviles */

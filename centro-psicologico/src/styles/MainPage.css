@@ -35,7 +35,6 @@
 }
 
 .jumbotron-title {
-  font-family: "Nunito", sans-serif;
   font-weight: 700;
   font-size: 3rem;
   margin-bottom: 0.5rem;
@@ -43,7 +42,6 @@
 }
 
 .jumbotron-subtitle {
-  font-family: "Merriweather", serif;
   font-size: 1.4rem;
   font-style: italic;
   margin-bottom: 2rem;

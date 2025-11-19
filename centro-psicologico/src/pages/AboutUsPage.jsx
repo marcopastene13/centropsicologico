@@ -22,8 +22,12 @@ const teamValues = [
     icon: "❤️"
   }
 ];
+
 const fotosCentro = [
-  '/images/centro1.jpg'
+  '/images/centro1.jpg',
+  '/images/centro2.jpg',
+  '/images/centro3.jpg',
+  '/images/centro4.jpg'
 ];
 
 export default function AboutUsPage() {
@@ -37,23 +41,29 @@ export default function AboutUsPage() {
         </p>
       </div>
 
-      {/* Carrusel de fotos del centro */}
+      {/* ✅ CARRUSEL MEJORADO */}
       <h2 className="text-center mb-4">Nuestro Centro</h2>
       <Row className="justify-content-center mb-5">
-        <Col md={8}>
-          <Carousel>
+        <Col lg={6} md={8} xs={12}>
+          <Carousel className="carousel-card" indicators={true} controls={true}>
             {fotosCentro.map((src, idx) => (
               <Carousel.Item key={src}>
-                <img className="d-block w-100" src={src} alt={`Foto ${idx + 1}`} />
-                {/* Si quieres agregar caption, agrega aquí */}
-                {/* <Carousel.Caption>
-            <h5>Texto opcional</h5>
-          </Carousel.Caption> */}
+                <Card className="custom-card carousel-card-item">
+                  <div className="carousel-image-wrapper">
+                    <Card.Img 
+                      variant="top" 
+                      src={src} 
+                      alt={`Centro Psicológico ${idx + 1}`}
+                      className="carousel-image"
+                    />
+                  </div>
+                </Card>
               </Carousel.Item>
             ))}
           </Carousel>
         </Col>
       </Row>
+
       {/* Misión y Visión */}
       <Row className="mb-5">
         <Col md={6} className="mb-4">
