@@ -18,7 +18,7 @@ const contactInfo = [
   },
   {
     title: "Dirección",
-    value: "Gral. Ordóñez 155, of. 1104",
+    value: "Gral. Ordóñez 155, of. 1104, Maipú, Santiago.",
     icon: "📍",
     link: "https://maps.app.goo.gl/xqfQvmWpq45gDET8A"
   },

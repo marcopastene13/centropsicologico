@@ -94,7 +94,7 @@ export default function MainPage() {
                         </Col>
 
                         <Col md={6} className="mb-4 d-flex flex-column">
-                            <h3 className="section-subtitle mb-3">Artículos Recientes</h3>
+                            <h3 className="section-subtitle mb-4">Artículos Recientes</h3>
 
                             {/* Grid 3 columnas en md+ */}
                             {/* Grid 3 columnas en md+ */}
