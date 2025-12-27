@@ -18,6 +18,13 @@ const serviceDetails = {
     price: "$20.000"
     // linkPago: "https://www.mercadopago.cl/checkout?preference_id=yyy"
   },
+  pack4: {
+    label: "Pack 4 Terapias Presenciales",
+    description: "4 sesiones presenciales con descuento. Ideal para iniciar un proceso terapéutico estructurado.",
+    price: "$80.000",
+    originalPrice: "$100.000", // $25k x 4
+    savings: "$20.000"
+  },
 };
 
 const professionals = [
@@ -49,7 +56,7 @@ const professionals = [
     },
     booked: {
     },
-    modalities: ["presencial", "online"],
+    modalities: ["presencial", "online", "pack4"],
   },
   {
     id: 2,
@@ -208,7 +215,8 @@ export default function ProfessionalDetail() {
     form.correo &&
     form.telefono &&
     form.detalles &&
-    selectedSlot;
+    (selectedModality === "pack4" || selectedSlot); // pack4 no requiere slot específico
+
 
   const handleInputChange = (e) => {
     setForm({
@@ -320,7 +328,7 @@ export default function ProfessionalDetail() {
     }
   };
   return (
-    <Container className="mt-4">
+    <Container className="mt-4 professional-detail-container">
       <Row>
         <Col md={8}>
           <Card className="custom-card mb-4">
@@ -356,28 +364,58 @@ export default function ProfessionalDetail() {
                   <Card.Text>{professional.bio}</Card.Text>
                   <div className="mb-4">
                     <h4>Modalidades de Servicio</h4>
-                    <Row>
-                      {professional.modalities.map((mod) => (
-                        <Col xs={12} md={6} key={mod}>
-                          <Card
-                            className={`mb-2 ${selectedModality === mod ? "border-success" : ""}`}
-                            onClick={() => setSelectedModality(mod)}
-                            style={{ cursor: "pointer" }}
-                          >
-                            <Card.Body>
-                              <Card.Title>
-                                {serviceDetails[mod]?.label || mod}
-                              </Card.Title>
-                              <Card.Text>
-                                {serviceDetails[mod]?.description}
-                              </Card.Text>
-                              <Badge bg="info">{serviceDetails[mod]?.price}</Badge>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      ))}
+                    <Row className="g-3 align-items-stretch">
+                      {professional.modalities.map((mod) => {
+                        const details = serviceDetails[mod];
+                        const isPackOffer = mod === "pack4";
+
+                        return (
+                          <Col xs={12} md={6} key={mod} className={isPackOffer ? "mb-2" : "mb-2"}>
+                            <Card
+                              className={`mb-2 service-modality-card ${selectedModality === mod ? "selected-modality" : ""
+                                } ${isPackOffer ? "pack-offer-card" : ""}`}
+
+                              onClick={() => setSelectedModality(mod)}
+                              style={{ cursor: "pointer" }}
+                            >
+                              <Card.Body>
+                                <div className="d-flex justify-content-between align-items-start">
+                                  <div className="flex-grow-1">
+                                    <Card.Title className="mb-1">{details?.label || mod}</Card.Title>
+                                    <Card.Text className="small">
+                                      {details?.description}
+                                    </Card.Text>
+                                  </div>
+                                  {isPackOffer && (
+                                    <Badge bg="warning" text="dark" className="ms-2">
+                                      Oferta
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <div className="d-flex align-items-baseline gap-2 mt-2">
+                                  <Badge bg="info" className="fs-6">
+                                    {details?.price}
+                                  </Badge>
+                                  {isPackOffer && (
+                                    <>
+                                      <span className="text-decoration-line-through text-muted small">
+                                        {details?.originalPrice}
+                                      </span>
+                                      <Badge bg="success" className="small">
+                                        Ahorras {details?.savings}
+                                      </Badge>
+                                    </>
+                                  )}
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          </Col>
+                        );
+                      })}
                     </Row>
                   </div>
+
                   <div className="mb-3">
                     <h6>Horarios de Atención:</h6>
                     <p className="text-muted">{professional.scheduleLabel}</p>
@@ -398,8 +436,13 @@ export default function ProfessionalDetail() {
         <Col md={4}>
           <Card className="custom-card">
             <Card.Body>
-              <Card.Title className="text-center mb-3">Reservar Sesión</Card.Title>
-              <div className="mb-3">
+              <Card.Title className="text-center mb-3">
+                Reservar sesión con {professional.name}
+              </Card.Title>
+
+              {/* Bloque 1: fecha y horario */}
+              <div className="mb-4">
+                <h6 className="mb-2">1. Elige fecha</h6>
                 <Calendar
                   onChange={setSelectedDate}
                   value={selectedDate}
@@ -411,33 +454,49 @@ export default function ProfessionalDetail() {
                 />
                 <div className="text-center mt-2">
                   <small className="text-muted">
-                    Fecha seleccionada: <strong>{selectedDate.toLocaleDateString()}</strong>
+                    Fecha seleccionada:{" "}
+                    <strong>{selectedDate.toLocaleDateString()}</strong>
                   </small>
                 </div>
               </div>
-              <div className="mb-3">
-                <h6 className="mb-2">Horarios disponibles</h6>
-                {availableSlots.length === 0 ? (
-                  <div className="text-muted small">
-                    No hay horarios disponibles para este día.
-                  </div>
-                ) : (
-                  <div className="d-flex flex-wrap gap-2">
-                    {availableSlots.map((slot) => (
-                      <Button
-                        key={slot}
-                        variant={selectedSlot === slot ? "success" : "outline-success"}
-                        size="sm"
-                        onClick={() => setSelectedSlot(slot)}
-                      >
-                        {slot}
-                      </Button>
-                    ))}
-                  </div>
-                )}
-              </div>
 
-              {/* Formulario previo al pago */}
+              {/* Bloque 2: horario (solo si no es pack) */}
+              {selectedModality !== "pack4" && (
+                <div className="mb-4">
+                  <h6 className="mb-2">2. Elige horario</h6>
+                  {availableSlots.length === 0 ? (
+                    <div className="text-muted small">
+                      No hay horarios disponibles para este día.
+                    </div>
+                  ) : (
+                    <div className="d-flex flex-wrap gap-2">
+                      {availableSlots.map((slot) => (
+                        <Button
+                          key={slot}
+                          variant={selectedSlot === slot ? "success" : "outline-success"}
+                          size="sm"
+                          onClick={() => setSelectedSlot(slot)}
+                        >
+                          {slot}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Si es pack, mostrar texto diferente */}
+              {selectedModality === "pack4" && (
+                <div className="mb-4 p-3 bg-light rounded">
+                  <p className="small text-muted mb-0">
+                    <strong>Pack de 4 sesiones:</strong> Una vez confirmada tu reserva,
+                    coordinaremos los horarios de tus 4 sesiones directamente contigo.
+                  </p>
+                </div>
+              )}
+
+
+              {/* Bloque 2: datos de contacto */}
               <Form className="mb-3">
                 <Form.Group className="mb-2">
                   <Form.Label>Nombre completo</Form.Label>
@@ -504,7 +563,10 @@ export default function ProfessionalDetail() {
                 </Form.Group>
               </Form>
 
+              {/* Bloque 3: forma de confirmación/pago */}
               <div className="d-grid gap-2 mt-3">
+                <h6 className="mb-2 text-center">4. Confirmar reserva</h6>
+
                 <Button
                   href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
                     whatsappMessage
@@ -518,7 +580,6 @@ export default function ProfessionalDetail() {
                   Confirmar por WhatsApp
                 </Button>
 
-                {/* NUEVO: BOTÓN DE TRANSFERENCIA */}
                 <Button
                   variant="info"
                   size="lg"
@@ -557,6 +618,7 @@ export default function ProfessionalDetail() {
             </Card.Body>
           </Card>
         </Col>
+
       </Row>
     </Container>
   );

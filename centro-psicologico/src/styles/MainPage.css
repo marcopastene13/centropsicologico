@@ -6,13 +6,14 @@
 
 .jumbotron-section {
   position: relative;
-  height: 400px;
+  min-height: 400px;
   overflow: hidden;
   border-radius: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f5f7fa;
+  padding: 3rem 1.5rem;
 }
 
 .jumbotron-background {
@@ -32,6 +33,16 @@
   z-index: 2;
   color: #52796f;
   padding: 0 2rem;
+  max-width: 720px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.jumbotron-lead {
+  font-size: 1.05rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #52616b;
 }
 
 .jumbotron-title {
@@ -129,6 +140,16 @@
 
 /*proffesional card */
 
+.professional-detail-container h6 {
+  font-weight: 600;
+  color: #52796f;
+}
+
+.professional-detail-container .react-calendar {
+  border-radius: 12px;
+  border: 1px solid #e0e4e0;
+}
+
 .professional-card {
   background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
   display: flex;
@@ -197,6 +218,43 @@
   color: white;
 }
 
+.service-modality-card {
+  border-radius: 14px;
+  border: 2px solid #e0e4e0;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.service-modality-card.selected-modality {
+  border-color: #84a98c;
+  box-shadow: 0 4px 12px rgba(132, 169, 140, 0.2);
+}
+
+.service-modality-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.service-modality-card:hover {
+  box-shadow: 0 4px 12px rgba(132, 169, 140, 0.15);
+  border-color: #84a98c;
+}
+
+.pack-offer-card {
+  background: linear-gradient(135deg, #f7f9f8 0%, #f0f4f2 100%);
+  border-color: #84a98c !important;
+  border-width: 2px;
+}
+
+.pack-offer-card:hover {
+  box-shadow: 0 6px 16px rgba(132, 169, 140, 0.2);
+}
+
+
 /* Cards de artículos más compactas */
 .article-card {
   border-radius: 14px;
@@ -221,4 +279,133 @@
 .article-card .btn {
   padding: 0.3rem 0.6rem;
   font-size: 0.85rem;
+}
+
+.services-section {
+  margin-top: 3rem;
+}
+
+.service-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f7f9f8 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(160, 180, 170, 0.18);
+}
+
+.service-card .card-title {
+  font-weight: 600;
+  color: #52796f;
+}
+
+.service-card .card-text {
+  color: #6b7c6a;
+}
+
+.service-card .btn {
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.hero-secondary-btn {
+  padding: 12px 32px;
+  border-radius: 24px;
+  border-width: 2px;
+  font-weight: 500;
+  border-color: #84a98c !important;   /* verde que ya usas */
+  color: #84a98c !important;
+  background-color: transparent;
+}
+
+.hero-secondary-btn:hover,
+.hero-secondary-btn:focus {
+  border-color: #52796f !important;   /* un verde más oscuro para hover */
+  color: white !important;
+  background-color: transparent;
+}
+
+.hero-btn {
+  border-radius: 24px;
+  padding: 12px 32px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  min-width: 220px;    /* mismo ancho mínimo para los dos */
+}
+
+/* Primario (relleno) ya se apoya en .cta-button */
+.cta-button {
+  color: #ffffff;
+  box-shadow: 0 5px 15px rgba(132, 169, 140, 0.4);
+  border: none;
+}
+
+/* Secundario (outline) pero con misma forma */
+.hero-secondary-btn {
+  border-width: 2px;
+  border-color: #84a98c;
+  color: #84a98c;
+  background-color: transparent;
+}
+
+.hero-secondary-btn:hover,
+.hero-secondary-btn:focus {
+  border-color: #52796f;
+  color: #52796f;
+  background-color: transparent;
+}
+
+/*contact*/
+
+/* La fila debe estirar columnas */
+.contact-row {
+  align-items: stretch;
+}
+
+/* Hacer que ambas columnas se estiren iguales */
+.contact-col-left,
+.contact-col-right {
+  display: flex;
+}
+
+/* Dentro de cada columna, el contenido ocupa todo el alto */
+.contact-col-left {
+  flex-direction: column;
+}
+
+/* Card del formulario ocupa todo el alto de la col derecha */
+.contact-col-right .custom-card {
+  flex-grow: 1;
+}
+
+/* En la izquierda, las cards de info conservan su tamaño
+   y la última (WhatsApp) se estira para completar la altura */
+.contact-col-left .custom-card {
+  flex-shrink: 0;
+}
+
+.contact-whatsapp-card {
+  flex-grow: 1;            /* llena el espacio restante */
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-whatsapp-card .card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-col-right .custom-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-col-right .card-body {
+  display: flex;
+  flex-direction: column;
 }
