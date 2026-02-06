@@ -7,19 +7,19 @@ const professionals = [
         id: 1,
         name: "Patricia Santander",
         desc: "Psicóloga clínica especializada en terapia de adultos y manejo de ansiedad.",
-        img: "/images/patty.jpg",
+        img: "/images/professionals/patty.jpg",
     },
     {
         id: 2,
         name: "Yasna Valdes",
         desc: "Psicólogo infantil y adolescente con enfoque en terapia familiar.",
-        img: "/images/yasna.jpg",
+        img: "/images/professionals/yasna.jpg",
     },
     {
         id: 3,
         name: "Stephany Troncoso",
         desc: "Especialista en terapia de pareja y psicología organizacional.",
-        img: "/images/stephany.jpg",
+        img: "/images/professionals/stephany.jpg",
     },
 ];
 
@@ -66,7 +66,7 @@ export default function MainPage() {
                             <div className="d-flex flex-column flex-md-row gap-3 justify-content-center mt-3">
                                 <Button
                                     size="lg"
-                                    href="/contacto"
+                                    href="/profesionales"
                                     variant="success"
                                     className="cta-button hero-btn"
                                 >

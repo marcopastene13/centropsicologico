@@ -1,625 +1,330 @@
-import { Container, Button, Row, Col, Card, Badge, Form } from "react-bootstrap";
+import { Container, Button, Row, Col, Card, Badge, Form, Image, Nav } from "react-bootstrap";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useParams } from "react-router-dom";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from 'react';
+import { notifyProfessionalPayment, notifyClientPayment, generateTransactionId, saveTransactionRecord } from '../utils/notificationService';
+import ProfessionalCVModal from "../components/ProfessionalCVModal";
+import PaymentMethodModal from "../components/PaymentMethodModal";
 
-// Configura tus links y precios aquí
-const serviceDetails = {
-  presencial: {
-    label: "Terapia Presencial",
-    description: "Sesión presencial en consulta, espacio privado y seguro en Maipú.",
-    price: "$25.000"
-    // linkPago: "https://www.mercadopago.cl/checkout?preference_id=xxx"
-  },
-  online: {
-    label: "Terapia Online",
-    description: "Sesión por videollamada, flexibilidad para pacientes en todo Chile.",
-    price: "$20.000"
-    // linkPago: "https://www.mercadopago.cl/checkout?preference_id=yyy"
-  },
-  pack4: {
-    label: "Pack 4 Terapias Presenciales",
-    description: "4 sesiones presenciales con descuento. Ideal para iniciar un proceso terapéutico estructurado.",
-    price: "$80.000",
-    originalPrice: "$100.000", // $25k x 4
-    savings: "$20.000"
-  },
+
+const ProfessionalDetail = () => {
+  const { id } = useParams();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedService, setSelectedService] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showCVModal, setShowCVModal] = useState(false);
+  const [clientName, setClientName] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [bookingDetails, setBookingDetails] = useState(null);
+  const [activeTab, setActiveTab] = useState('services');
+  
+
+  const serviceDetails = {
+    1: {
+      id: 1,
+      name: 'Patricia Santander',
+      title: 'Psicóloga Clínica',
+      image: "/images/professionals/patty.jpg",
+      bio: 'Especialista en terapia cognitivo-conductual con 10 años de experiencia.',
+      services: [
+        { id: 1, name: 'Terapia Individual', price: 80000, duration: 60 },
+        { id: 2, name: 'Terapia de Pareja', price: 100000, duration: 60 },
+        { id: 3, name: 'Consulta Inicial', price: 50000, duration: 45 }
+      ],
+      availability: ['Lunes', 'Miércoles', 'Viernes'],
+      rating: 4.8,
+      reviews: 45
+    },
+    2: {
+      id: 2,
+      name: 'Yasna Valdes',
+      title: 'Psicólogo Especialista en Ansiedad',
+      image: "/images/professionals/yasna.jpg",
+      bio: 'Experto en tratamiento de trastornos de ansiedad y estrés postraumático.',
+      services: [
+        { id: 1, name: 'Terapia Individual', price: 85000, duration: 60 },
+        { id: 2, name: 'Técnicas de Relajación', price: 60000, duration: 45 }
+      ],
+      availability: ['Martes', 'Jueves'],
+      rating: 4.9,
+      reviews: 52
+    }
+  };
+
+  const professional = serviceDetails[id] || serviceDetails[1];
+  const availableTimes = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
+
+  const handleBooking = () => {
+    if (!selectedService || !selectedDate || !selectedTime || !clientName || !clientEmail) {
+      alert('Por favor completa todos los campos');
+      return;
+    }
+  
+  setBookingDetails({
+    professional,
+    service: selectedService,
+    date: selectedDate,
+    time: selectedTime,
+    client: {
+      name: clientName,
+      email: clientEmail,
+      phone: clientPhone
+    }
+  });
+  
+  setShowPaymentModal(true);
 };
 
-const professionals = [
-  {
-    id: 1,
-    name: "Patricia Santander",
-    title: "Psicóloga Clínica",
-    img: "/images/patty.jpg",
-    whatsapp: "56932736893",
-    bio: "Patricia Santander, Directora y Psicóloga Clínica desde 2016 en Maipú, especialista en psicodiagnóstico, terapia individual y víctimas de ASI. También ejerce como Perito Judicial Forense, elaborando informes y evaluaciones en contextos penales y familiares.",
-    specialties: ["Psicodiagnóstico avanzado", "Ley Karin", "Peritaje judicial forense", "Evaluación en contextos penales y familiares"],
-    education: [
-      "Diplomado en Peritaje Psicológico y Social en Contexto Judicial | Universidad Andrés Bello (UNAB) | 2023",
-      "Diplomado Internacional Estrategias Clínicas Terapia Breve | ADIPA | 2021",
-      "Curso Peritaje Psicológico en contexto familiar  | Instituto Virtulys | 2021",
-      "Curso Psicopatología Forense: Herramientas para la Evaluación Pericial Psicológica | Instituto Grupo Palermo | 2018",
-      "Título Profesional de Psicóloga con Grado Académico de Licenciada en Psicología | Universidad de Las Américas(UDLA) | 2015",
-      "Seminario “Psicología Forense y Jurídica” | Universidad Bernardo O'Higgins (UBO) | 2015",
-      "Seminario “Expresiones de la Violencia de Género” | Universidad de Concepción (UDC) | 2015",
-      "Seminario “Autocuidado y Manejo de las Emociones en Niños Preadolescentes” | Universidad de Las Américas(UDLA) | 2013",
-      "Seminario “Apego en la Primera Infancia” | Universidad de Chile (UDCH) | 2012",
-      "Cátedra Grafología | Universidad de Las Américas (UDLA) | 2012",
-      "Especialización en investigación Ley Karin con perspectiva de género"
-    ],
-    scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
-    workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
-    slots: { start: "09:00", end: "20:00", intervalMins: 60 }, // cada 60m
-    exceptions: {
-    },
-    booked: {
-    },
-    modalities: ["presencial", "online", "pack4"],
-  },
-  {
-    id: 2,
-    name: "Yasna Valdes",
-    title: "Psicólogo Infantil",
-    img: "/images/yasna.jpg",
-    whatsapp: "56987654321",
-    bio: "Psicóloga clínica egresada con distinción máxima con más de 10 años de experiencia. Especialista en tratamiento de procesos de reparación en vulneración de derechos, abordaje de trastornos del ánimo y conducta. Experta en psicodiagnóstico y trabajo en equipos multidisciplinarios.",
-    specialties: ["Psicología Infantil", "TDAH", "Trastornos del Espectro Autista", "Terapia Familiar"],
-    education: [
-      "Psicóloga clínica",
-      "Diplomada en Salud Mental",
-      "Diplomada en Pruebas Psicológicas y Proyectivas",
-      "Post-título en Infancia, Adolescencia y Familia",
-      "Diplomada en Derechos Humanos",
-      "Diplomada en Drogodependencias y Reducción de Daños",
-      "Diplomada en Peritaje Social y Psicológico",
-      "Diploma en Herramientas Psicolaborales",
-      "Diplomada en Neurodesarrollo",
-      "Acreditada en Test WISC-V",
-      "Acreditada en Test ADOS-2",
-      "Acreditada en Test ADI-R",
-      "Zulliger",
-      "PBLL",
-      "TRO",
-      "CAT-A/H"
-    ],
-    scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
-    workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
-    slots: { start: "09:00", end: "20:00", intervalMins: 60 }, // cada 60m
-    exceptions: {
-    },
-    booked: {
-    },
-    modalities: ["presencial", "online"],
-  },
-  {
-    id: 3,
-    name: "Stephany Troncoso",
-    title: "Psicólogo Infantil",
-    img: "/images/stephany.jpg",
-    whatsapp: "56987654321",
-    bio: "Con formación en psicología clínica y especialización en el ámbito infanto juvenil, Stephany Troncoso se destaca por su enfoque integral y empático en la atención de niños, niñas y adolescentes. Posee diplomados en Etnicidad y Género y en Terapia Infanto Juvenil, que respaldan su mirada inclusiva y respetuosa de la diversidad.",
-    specialties: ["Psicología Infantil", "TDAH", "Trastornos del Espectro Autista", "Terapia Familiar"],
-    education: [
-      "Psicóloga Clínica Infanto Juvenil.",
-      "Diplomado en Etnicidad y Género.",
-      "Diplomado en Terapia Infanto Juvenil.",
-      "Formación continua en temáticas de desarrollo infantil, habilidades parentales y salud mental adolescente.",
-      "Participación en seminarios sobre regulación emocional, autoestima y orientación vocacional."
-    ],
-    scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
-    workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
-    slots: { start: "09:00", end: "20:00", intervalMins: 60 }, // cada 60m
-    exceptions: {
-    },
-    booked: {
-    },
-    modalities: ["presencial"],
-  },
-];
-
-// Utils
-const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
-const toKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-function generateTimeSlots(start, end, intervalMins) {
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
-  const slots = [];
-  let cur = new Date(0, 0, 0, sh, sm, 0);
-  const endD = new Date(0, 0, 0, eh, em, 0);
-  while (cur <= endD) {
-    slots.push(`${pad(cur.getHours())}:${pad(cur.getMinutes())}`);
-    cur = new Date(cur.getTime() + intervalMins * 60000);
-  }
-  if (slots.length > 1 && slots[slots.length - 1] === end) slots.pop();
-  return slots;
-}
-
-export default function ProfessionalDetail() {
-  const { id } = useParams();
-  const professional = professionals.find((p) => p.id === parseInt(id));
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [selectedModality, setSelectedModality] = useState(professional?.modalities[0]);
-
-  // Form state
-  const [form, setForm] = useState({
-    nombre: "",
-    rut: "",
-    correo: "",
-    telefono: "",
-    detalles: "",
-  });
-  const [formTouched, setFormTouched] = useState(false);
-
-  useEffect(() => {
-    setSelectedSlot(null);
-  }, [selectedDate]);
-
-  const allSlots = useMemo(() => {
-    if (!professional) return [];
-    return generateTimeSlots(
-      professional.slots.start,
-      professional.slots.end,
-      professional.slots.intervalMins
-    );
-  }, [professional]);
-
-  if (!professional) {
-    return (
-      <Container className="mt-4">
-        <Card className="custom-card text-center">
-          <Card.Body>
-            <h2>Profesional no encontrado</h2>
-            <p>El profesional que buscas no existe o ha sido removido.</p>
-            <Button href="/professionals" variant="primary">
-              Ver todos los profesionales
-            </Button>
-          </Card.Body>
-        </Card>
-      </Container>
-    );
-  }
-
-  const isWeekend = (date) => {
-    const day = date.getDay();
-    return day === 0 || day === 6;
-  };
-  const isWorkingDay = (date) => {
-    const jsDay = date.getDay();
-    const weekday = jsDay === 0 ? 7 : jsDay;
-    return professional.workingDays.includes(weekday);
-  };
-  const isDisabledDay = (date) => {
-    const key = toKey(date);
-    if (professional.exceptions[key]) return true;
-    if (!isWorkingDay(date)) return true;
-    if (date < new Date(new Date().setHours(0, 0, 0, 0))) return true;
-    return false;
-  };
-
-  const key = toKey(selectedDate);
-  const bookedForDay = professional.booked[key] || [];
-  const availableSlots = allSlots.filter((s) => !bookedForDay.includes(s));
-
-  // Mensaje para reserva WhatsApp
-  const whatsappMessage = selectedSlot
-    ? `Hola ${professional.name}, quiero agendar una sesión (${serviceDetails[selectedModality]?.label}) el ${selectedDate.toLocaleDateString()} a las ${selectedSlot}.\n\nNombre: ${form.nombre}\nRUT: ${form.rut}\nCorreo: ${form.correo}\nTeléfono: ${form.telefono}\nDetalles: ${form.detalles}`
-    : `Hola ${professional.name}, me gustaría coordinar una sesión.`;
-
-  // Form validation
-  const isFormValid =
-    form.nombre &&
-    form.rut &&
-    form.correo &&
-    form.telefono &&
-    form.detalles &&
-    (selectedModality === "pack4" || selectedSlot); // pack4 no requiere slot específico
+const handlePaymentSuccess = () => {
+  alert('¡Reserva confirmada exitosamente!');
+  // Resetear formulario
+  setClientName('');
+  setClientEmail('');
+  setClientPhone('');
+  setSelectedService(null);
+  setSelectedTime(null);
+  setActiveTab('services');
+};
 
 
-  const handleInputChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-    setFormTouched(true);
-  };
 
-  const handlePayment = async () => {
-    if (!isFormValid) return;
-
-    try {
-      const buyOrder = `ORD-${Date.now()}`;
-      const sessionId = `SES-${Date.now()}`;
-      const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
-      const returnUrl = `${window.location.origin}/payment/confirmation`;
-
-      const createResponse = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/payment/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount,
-          buyOrder,
-          sessionId,
-          returnUrl,
-        }),
-      });
-
-      const data = await createResponse.json();
-      console.log("Respuesta backend:", data);
-
-      if (!data.token || !data.url) {
-        throw new Error("Token o URL no recibidos del backend");
-      }
-
-      const { token, url } = data;
-
-      // Guardar datos en sessionStorage
-      sessionStorage.setItem('transactionToken', token);
-      sessionStorage.setItem('buyOrder', buyOrder);
-      sessionStorage.setItem('formData', JSON.stringify(form));
-      sessionStorage.setItem('professional', JSON.stringify(professional));
-      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
-      sessionStorage.setItem('selectedSlot', selectedSlot);
-      sessionStorage.setItem('amount', amount);
-
-      // ✅ REDIRIGIR CON TOKEN EN URL
-      window.location.href = `${url}?token_ws=${token}`;
-    } catch (error) {
-      console.error('Error processing payment:', error);
-      alert('Error al procesar el pago. Intenta nuevamente.');
-    }
-  };
-
-  // Función para Transferencia Electrónica
-  const handleTransferencia = async () => {
-    if (!isFormValid) return;
-
-    try {
-      const buyOrder = `ORD-${Date.now()}`;
-      const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
-
-      console.log('Iniciando transferencia electrónica...');
-
-      // Llamar backend para crear reserva con transferencia
-      const response = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/reservations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          formData: form,
-          professional: {
-            id: professional.id,
-            name: professional.name,
-          },
-          selectedDate: selectedDate.toISOString(),
-          selectedSlot: selectedSlot,
-          selectedModality: selectedModality,
-          amount,
-          buyOrder,
-          paymentMethod: 'TRANSFER', // Marcar como transferencia
-          status: 'PENDING', // Pendiente de confirmación
-        }),
-      });
-
-      const data = await response.json();
-      console.log('Respuesta reserva:', data);
-
-      if (!data.id) {
-        throw new Error(data.error || 'Error al crear reserva');
-      }
-
-      // Guardar en sessionStorage
-      sessionStorage.setItem('reservationId', data.id);
-      sessionStorage.setItem('formData', JSON.stringify(form));
-      sessionStorage.setItem('professional', JSON.stringify(professional));
-      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
-      sessionStorage.setItem('selectedSlot', selectedSlot);
-      sessionStorage.setItem('amount', amount);
-      sessionStorage.setItem('buyOrder', buyOrder);
-      sessionStorage.setItem('paymentMethod', 'TRANSFER');
-
-      // Redirigir a página de transferencia
-      window.location.href = '/transfer/confirmation';
-
-    } catch (error) {
-      console.error('Error:', error);
-      alert(`Error: ${error.message}`);
-    }
-  };
   return (
-    <Container className="mt-4 professional-detail-container">
-      <Row>
-        <Col md={8}>
-          <Card className="custom-card mb-4">
-            <Row className="g-0">
-              {professional.img && (
-                <Col md={4} className="d-flex flex-column">
-                  <Card.Img
-                    src={professional.img}
-                    alt={`Foto de ${professional.name}`}
-                    style={{ height: "300px", objectFit: "cover" }}
-                    className="rounded-start"
-                  />
-                  <div className="p-3 border-top text-center">
-                    <span style={{ fontWeight: "600" }}>
-                      {`Atiende ${professional.modalities.map(m => serviceDetails[m]?.label || m).join(" y ")}`}
-                    </span>
-                  </div>
-                </Col>
-              )}
-              <Col md={professional.img ? 8 : 12}>
+    <>
+      <div className="professional-header" style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        padding: '60px 20px',
+        marginBottom: '40px',
+        borderRadius: '0 0 20px 20px'
+      }}>
+        <Container>
+          <Row className="align-items-center">
+            <Col md={4} className="text-center mb-4 mb-md-0">
+              <Image
+                src={professional.image}
+                alt={professional.name}
+                roundedCircle
+                width={300}
+                height={300}
+                className="border-5 border-white"
+              />
+            </Col>
+            <Col md={8}>
+              <h1 className="mb-2" style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{professional.name}</h1>
+              <h4 className="mb-3" style={{ fontSize: '1.3rem', opacity: 0.9 }}>{professional.title}</h4>
+              <p className="mb-4" style={{ fontSize: '1.1rem' }}>{professional.bio}</p>
+              <div className="d-flex gap-3">
+                <Badge bg="light" text="dark" className="p-2 fs-6">
+                  ⭐ {professional.rating} ({professional.reviews} reseñas)
+                </Badge>
+                <Badge bg="success" className="p-2 fs-6">
+                  ✓ Verificado
+                </Badge>
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+
+      <Container className="py-5">
+                <button
+          onClick={() => setShowCVModal(true)}
+          style={{
+            background: 'linear-gradient(135deg, #6366f1 0%, #5558d3 100%)',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            marginBottom: '1.5rem',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-2px)';
+            e.target.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+          }}
+        >
+          <span style={{ fontSize: '1.2rem' }}>📄</span>
+          Ver CV Completo
+        </button>
+        <Nav variant="tabs" className="mb-5 border-bottom-2" activeKey={activeTab}>
+          <Nav.Item>
+            <Nav.Link
+              eventKey="services"
+              onClick={() => setActiveTab('services')}
+              className="fs-5 fw-bold"
+              style={{ color: activeTab === 'services' ? '#667eea' : '#666' }}
+            >
+              📋 Servicios
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link
+              eventKey="booking"
+              onClick={() => setActiveTab('booking')}
+              className="fs-5 fw-bold"
+              style={{ color: activeTab === 'booking' ? '#667eea' : '#666' }}
+            >
+              📅 Agendar Cita
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+
+        {activeTab === 'services' && (
+          <Row className="g-4">
+            {professional.services.map((service) => (
+              <Col key={service.id} md={6} lg={4}>
+                <Card className="h-100 shadow-sm border-0 hover-shadow" style={{ cursor: 'pointer', transition: 'all 0.3s' }}
+                  onClick={() => {
+                    setSelectedService(service);
+                    setActiveTab('booking');
+                  }}
+                >
+                  <Card.Body>
+                    <Card.Title className="fs-5 fw-bold text-primary mb-3">{service.name}</Card.Title>
+                    <div className="mb-3">
+                      <p className="mb-2"><strong>Precio:</strong> <span style={{ fontSize: '1.5rem', color: '#667eea' }}>\${service.price.toLocaleString()}</span></p>
+                      <p className="mb-0"><strong>Duración:</strong> {service.duration} minutos</p>
+                    </div>
+                    <Button variant="primary" className="w-100" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}>
+                      Agendar →
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
+
+        {activeTab === 'booking' && (
+          <Row>
+            <Col lg={6}>
+              <Card className="shadow-sm border-0 mb-4">
                 <Card.Body>
-                  <Card.Title as="h1">{professional.name}</Card.Title>
-                  <Card.Subtitle className="mb-2 text-muted">
-                    {professional.title}
-                  </Card.Subtitle>
-                  <div className="mb-3">
-                    {professional.specialties.map((sp, i) => (
-                      <Badge key={i} bg="light" text="dark" className="me-2 mb-2">
-                        {sp}
-                      </Badge>
+                  <h5 className="mb-4 fw-bold text-primary">📅 Selecciona una fecha</h5>
+                  <Calendar
+                    onChange={setSelectedDate}
+                    value={selectedDate}
+                    minDate={new Date()}
+                    className="w-100"
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col lg={6}>
+              <Card className="shadow-sm border-0 mb-4">
+                <Card.Body>
+                  <h5 className="mb-4 fw-bold text-primary">👤 Tus datos</h5>
+                  <Form>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Nombre completo</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={clientName}
+                        onChange={(e) => setClientName(e.target.value)}
+                        placeholder="Tu nombre"
+                        className="border-2"
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Correo electrónico</Form.Label>
+                      <Form.Control
+                        type="email"
+                        value={clientEmail}
+                        onChange={(e) => setClientEmail(e.target.value)}
+                        placeholder="tu@email.com"
+                        className="border-2"
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-4">
+                      <Form.Label>Teléfono (opcional)</Form.Label>
+                      <Form.Control
+                        type="tel"
+                        value={clientPhone}
+                        onChange={(e) => setClientPhone(e.target.value)}
+                        placeholder="+56 9 XXXX XXXX"
+                        className="border-2"
+                      />
+                    </Form.Group>
+                  </Form>
+                </Card.Body>
+              </Card>
+
+              {selectedService && (
+                <Card className="shadow-sm border-0 mb-4 bg-light">
+                  <Card.Body>
+                    <h5 className="mb-3 fw-bold">📋 Resumen</h5>
+                    <div className="mb-2"><strong>Servicio:</strong> {selectedService.name}</div>
+                    <div className="mb-2"><strong>Fecha:</strong> {selectedDate.toLocaleDateString('es-CL')}</div>
+                    <div className="mb-2"><strong>Hora:</strong> {selectedTime || 'Selecciona una hora'}</div>
+                    <div className="mb-3"><strong>Monto:</strong> <span style={{ fontSize: '1.3rem', color: '#667eea' }}>\${selectedService.price.toLocaleString()}</span></div>
+                    <Button
+                      onClick={handleBooking}
+                      className="w-100"
+                      size="lg"
+                      style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none', fontWeight: 'bold' }}
+                    >
+                      Confirmar y Pagar →
+                    </Button>
+                  </Card.Body>
+                </Card>
+              )}
+            </Col>
+          </Row>
+        )}
+
+        {activeTab === 'booking' && (
+          <Row className="mt-4">
+            <Col lg={6}>
+              <Card className="shadow-sm border-0">
+                <Card.Body>
+                  <h5 className="mb-4 fw-bold text-primary">🕐 Selecciona una hora</h5>
+                  <div className="d-grid gap-2">
+                    {availableTimes.map((time) => (
+                      <Button
+                        key={time}
+                        variant={selectedTime === time ? 'primary' : 'outline-primary'}
+                        onClick={() => setSelectedTime(time)}
+                        className="fw-bold"
+                      >
+                        {time}
+                      </Button>
                     ))}
                   </div>
-                  <Card.Text>{professional.bio}</Card.Text>
-                  <div className="mb-4">
-                    <h4>Modalidades de Servicio</h4>
-                    <Row className="g-3 align-items-stretch">
-                      {professional.modalities.map((mod) => {
-                        const details = serviceDetails[mod];
-                        const isPackOffer = mod === "pack4";
-
-                        return (
-                          <Col xs={12} md={6} key={mod} className={isPackOffer ? "mb-2" : "mb-2"}>
-                            <Card
-                              className={`mb-2 service-modality-card ${selectedModality === mod ? "selected-modality" : ""
-                                } ${isPackOffer ? "pack-offer-card" : ""}`}
-
-                              onClick={() => setSelectedModality(mod)}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <Card.Body>
-                                <div className="d-flex justify-content-between align-items-start">
-                                  <div className="flex-grow-1">
-                                    <Card.Title className="mb-1">{details?.label || mod}</Card.Title>
-                                    <Card.Text className="small">
-                                      {details?.description}
-                                    </Card.Text>
-                                  </div>
-                                  {isPackOffer && (
-                                    <Badge bg="warning" text="dark" className="ms-2">
-                                      Oferta
-                                    </Badge>
-                                  )}
-                                </div>
-
-                                <div className="d-flex align-items-baseline gap-2 mt-2">
-                                  <Badge bg="info" className="fs-6">
-                                    {details?.price}
-                                  </Badge>
-                                  {isPackOffer && (
-                                    <>
-                                      <span className="text-decoration-line-through text-muted small">
-                                        {details?.originalPrice}
-                                      </span>
-                                      <Badge bg="success" className="small">
-                                        Ahorras {details?.savings}
-                                      </Badge>
-                                    </>
-                                  )}
-                                </div>
-                              </Card.Body>
-                            </Card>
-                          </Col>
-                        );
-                      })}
-                    </Row>
-                  </div>
-
-                  <div className="mb-3">
-                    <h6>Horarios de Atención:</h6>
-                    <p className="text-muted">{professional.scheduleLabel}</p>
-                  </div>
-                  <div>
-                    <h6>Formación</h6>
-                    <ul className="mb-0">
-                      {professional.education.map((e, i) => (
-                        <li key={i}>{e}</li>
-                      ))}
-                    </ul>
-                  </div>
                 </Card.Body>
-              </Col>
-            </Row>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="custom-card">
-            <Card.Body>
-              <Card.Title className="text-center mb-3">
-                Reservar sesión con {professional.name}
-              </Card.Title>
+              </Card>
+            </Col>
+          </Row>
+        )}
+      </Container>
 
-              {/* Bloque 1: fecha y horario */}
-              <div className="mb-4">
-                <h6 className="mb-2">1. Elige fecha</h6>
-                <Calendar
-                  onChange={setSelectedDate}
-                  value={selectedDate}
-                  minDate={new Date()}
-                  tileDisabled={({ date, view }) =>
-                    view === "month" ? isDisabledDay(date) : false
-                  }
-                  className="mx-auto"
-                />
-                <div className="text-center mt-2">
-                  <small className="text-muted">
-                    Fecha seleccionada:{" "}
-                    <strong>{selectedDate.toLocaleDateString()}</strong>
-                  </small>
-                </div>
-              </div>
+      <ProfessionalCVModal 
+        show={showCVModal}
+        onHide={() => setShowCVModal(false)}
+        professional={professional}
+      />
 
-              {/* Bloque 2: horario (solo si no es pack) */}
-              {selectedModality !== "pack4" && (
-                <div className="mb-4">
-                  <h6 className="mb-2">2. Elige horario</h6>
-                  {availableSlots.length === 0 ? (
-                    <div className="text-muted small">
-                      No hay horarios disponibles para este día.
-                    </div>
-                  ) : (
-                    <div className="d-flex flex-wrap gap-2">
-                      {availableSlots.map((slot) => (
-                        <Button
-                          key={slot}
-                          variant={selectedSlot === slot ? "success" : "outline-success"}
-                          size="sm"
-                          onClick={() => setSelectedSlot(slot)}
-                        >
-                          {slot}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Si es pack, mostrar texto diferente */}
-              {selectedModality === "pack4" && (
-                <div className="mb-4 p-3 bg-light rounded">
-                  <p className="small text-muted mb-0">
-                    <strong>Pack de 4 sesiones:</strong> Una vez confirmada tu reserva,
-                    coordinaremos los horarios de tus 4 sesiones directamente contigo.
-                  </p>
-                </div>
-              )}
-
-
-              {/* Bloque 2: datos de contacto */}
-              <Form className="mb-3">
-                <Form.Group className="mb-2">
-                  <Form.Label>Nombre completo</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="nombre"
-                    value={form.nombre}
-                    onChange={handleInputChange}
-                    placeholder="Ingresa tu nombre completo"
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-2">
-                  <Form.Label>RUT</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="rut"
-                    value={form.rut}
-                    onChange={handleInputChange}
-                    placeholder="12.345.678-9"
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-2">
-                  <Form.Label>Correo electrónico</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="correo"
-                    value={form.correo}
-                    onChange={handleInputChange}
-                    placeholder="ejemplo@correo.com"
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-2">
-                  <Form.Label>Número de teléfono</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="telefono"
-                    value={form.telefono}
-                    onChange={handleInputChange}
-                    placeholder="+56 9 1234 5678"
-                    required
-                    minLength={12}
-                    maxLength={12}
-                  />
-                  {formTouched && form.telefono && form.telefono.length !== 12 && (
-                    <span style={{ color: 'red', fontSize: '0.9em' }}>
-                      El teléfono debe tener exactamente 12 caracteres (ejemplo: +56912345678)
-                    </span>
-                  )}
-                </Form.Group>
-                <Form.Group className="mb-2">
-                  <Form.Label>Detalles</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="detalles"
-                    value={form.detalles}
-                    onChange={handleInputChange}
-                    placeholder="Comenta brevemente tu situación"
-                    required
-                  />
-                </Form.Group>
-              </Form>
-
-              {/* Bloque 3: forma de confirmación/pago */}
-              <div className="d-grid gap-2 mt-3">
-                <h6 className="mb-2 text-center">4. Confirmar reserva</h6>
-
-                <Button
-                  href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
-                    whatsappMessage
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="success"
-                  size="lg"
-                  disabled={!isFormValid}
-                >
-                  Confirmar por WhatsApp
-                </Button>
-
-                <Button
-                  variant="info"
-                  size="lg"
-                  onClick={handleTransferencia}
-                  disabled={!isFormValid}
-                >
-                  Pagar por Transferencia
-                </Button>
-
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={handlePayment}
-                  disabled={!isFormValid}
-                >
-                  Pagar con Tarjeta
-                </Button>
-
-                <Button
-                  href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
-                    `Hola ${professional.name}, tengo algunas preguntas sobre la terapia.`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="outline-primary"
-                >
-                  Hacer consulta
-                </Button>
-              </div>
-
-              <div className="text-center mt-3">
-                <small className="text-muted">
-                  Fines de semana y días no laborales aparecen bloqueados en el calendario.
-                </small>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-
-      </Row>
-    </Container>
+      <PaymentMethodModal
+        show={showPaymentModal}
+        onHide={() => setShowPaymentModal(false)}
+        professional={professional}
+        bookingData={bookingDetails}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+    </>
   );
 }
+export default ProfessionalDetail;
