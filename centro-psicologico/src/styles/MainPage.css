@@ -409,3 +409,82 @@
   display: flex;
   flex-direction: column;
 }
+
+.services-professionals-section {
+  margin-top: 3rem;
+}
+
+/* Tabs de servicios */
+.services-tabs-container {
+  margin-bottom: 2rem;
+}
+
+.services-nav {
+  gap: 0.75rem;
+}
+
+.service-pill {
+  background-color: #f5f7fa;
+  color: #52796f !important;
+  border: 2px solid #e0e4e0 !important;
+  border-radius: 24px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.service-pill:hover {
+  border-color: #84a98c !important;
+  background-color: #f0f4f2 !important;
+}
+
+.service-pill.active {
+  background-color: #84a98c !important;
+  color: #ffffff !important;
+  border-color: #84a98c !important;
+  box-shadow: 0 4px 12px rgba(132, 169, 140, 0.3);
+}
+
+.service-icon {
+  font-size: 1.2rem;
+}
+
+.service-label {
+  font-size: 0.95rem;
+}
+
+/* Descripción del servicio */
+.service-description {
+  text-align: center;
+}
+
+.service-description .card {
+  border: none;
+  border-left: 4px solid #84a98c;
+}
+
+/* Profesionales para servicio */
+.professionals-for-service h5 {
+  color: #52796f;
+  font-weight: 600;
+}
+
+/* Responsive para tabs en móvil */
+@media (max-width: 768px) {
+  .service-pill {
+    padding: 0.6rem 1rem !important;
+    font-size: 0.9rem;
+  }
+
+  .service-label {
+    display: none;
+  }
+
+  .service-pill.active .service-label {
+    display: inline;
+  }
+}
