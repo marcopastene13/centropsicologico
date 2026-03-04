@@ -56,12 +56,15 @@ export default function MainPage() {
                     <div className="jumbotron-content text-center">
                         <h1 className="jumbotron-title">Centro Psicológico Centenario</h1>
                         <p className="jumbotron-subtitle">
-                            Equilibrio y bienestar para tu vida
+                            "Encuentra el equilibrio emocional que mereces"
                         </p>
                         <p className="jumbotron-lead">
-                            Un equipo de psicólogos en Maipú dedicado a acompañarte en tus
-                            momentos difíciles, con atención ética, cercana y profesional.
+                            "Especialistas en terapia individual, familiar y pericial."
+                        <p className="jumbotron-lead">
+                            "Atención psicológica presencial y online en Maipú"
                         </p>
+                        </p>
+
                         <div className="d-flex flex-column flex-md-row gap-3 justify-content-center mt-3">
                             <div className="d-flex flex-column flex-md-row gap-3 justify-content-center mt-3">
                                 <Button
