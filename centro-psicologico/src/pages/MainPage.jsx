@@ -1,5 +1,7 @@
 import { Container, Row, Col, Card, Button, Carousel } from "react-bootstrap";
-import { externalArticles } from "../data/externalArticles";
+import { Link } from 'react-router-dom';
+import WhatsAppFloat from '../components/WhatsAppFloat';
+import WhyChooseUs from '../components/WhyChooseUs';
 import "../styles/MainPage.css";
 
 const professionals = [
@@ -60,9 +62,9 @@ export default function MainPage() {
                         </p>
                         <p className="jumbotron-lead">
                             "Especialistas en terapia individual, familiar y pericial."
-                        <p className="jumbotron-lead">
-                            "Atención psicológica presencial y online en Maipú"
-                        </p>
+                            <p className="jumbotron-lead">
+                                "Atención psicológica presencial y online en Maipú"
+                            </p>
                         </p>
 
                         <div className="d-flex flex-column flex-md-row gap-3 justify-content-center mt-3">
@@ -91,6 +93,7 @@ export default function MainPage() {
                     </div>
                 </section>
 
+                <WhyChooseUs />
                 {/* SERVICIOS */}
                 <section className="services-section mt-5">
                     <h2 className="section-title mb-4 text-center">Nuestros servicios</h2>
@@ -156,97 +159,101 @@ export default function MainPage() {
                     </Row>
                 </section>
 
-                {/* SOBRE NOSOTROS + ARTÍCULOS */}
-                <section className="about-news-section mt-5 mb-5">
-                    <Row className="align-items-stretch">
-                        <Col md={6} className="mb-4 d-flex flex-column">
-                            <h3 className="section-subtitle mb-4">Sobre nosotros</h3>
-                            <Card className="custom-card about-card flex-grow-1">
-                                <div className="p-4">
-                                    Somos un equipo multidisciplinario dedicado a tu bienestar
-                                    emocional. Brindamos atención personalizada y profesional
-                                    para acompañarte en tu proceso de crecimiento, ofreciendo un
-                                    espacio seguro, ético y respetuoso para impulsar cambios
-                                    positivos en tu vida.
-                                </div>
-                                <Card.Footer className="bg-transparent border-0 mt-auto">
-                                    <Button
-                                        href="/sobrenosotros"
-                                        variant="primary"
-                                        className="mt-3 w-100"
-                                    >
-                                        Conocer más
-                                    </Button>
-                                </Card.Footer>
-                            </Card>
-                        </Col>
+                {/* SOBRE NOSOTROS + TESTIMONIOS */}
+                {/* Sección: Sobre Nosotros y Testimonios - Dos cards lado a lado */}
+                <section className="about-testimonials-section">
+                    <Container>
+                        <Row className="g-4">
+                            {/* Card izquierda: Sobre Nosotros */}
+                            <Col md={6}>
+                                <Card className="about-card h-100">
+                                    <Card.Body className="d-flex flex-column">
+                                        <h3 className="card-title-custom mb-3">Sobre nosotros</h3>
+                                        <p className="card-text-custom">
+                                            Somos un equipo multidisciplinario dedicado a tu bienestar emocional.
+                                            Brindamos atención personalizada y profesional para acompañarte en tu
+                                            proceso de crecimiento, ofreciendo un espacio seguro, ético y respetuoso
+                                            para impulsar cambios positivos en tu vida.
+                                        </p>
+                                        <Button
+                                            as={Link}
+                                            to="/sobre-nosotros"
+                                            variant="success"
+                                            className="mt-auto"
+                                        >
+                                            Conocer más →
+                                        </Button>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
 
-                        <Col md={6} className="mb-4 d-flex flex-column">
-                            <h3 className="section-subtitle mb-4">Artículos recientes</h3>
+                            {/* Card derecha: Testimonios */}
+                            <Col md={6}>
+                                <Card className="testimonials-card h-100">
+                                    <Card.Body className="d-flex flex-column">
+                                        <h3 className="card-title-custom mb-3">Lo que dicen nuestros pacientes</h3>
 
-                            {/* Grid en desktop */}
-                            <Row className="g-3 d-none d-md-flex">
-                                {externalArticles.slice(0, 3).map((a, i) => (
-                                    <Col md={4} key={i} className="d-flex">
-                                        <Card className="custom-card article-card h-100 d-flex flex-column">
-                                            <Card.Body className="d-flex flex-column">
-                                                <Card.Title className="mb-2">{a.title}</Card.Title>
-                                                <Card.Text className="text-muted mb-3">
-                                                    {a.desc}
-                                                </Card.Text>
-                                                <div className="mt-auto d-flex justify-content-between align-items-center">
-                                                    <small className="text-muted">{a.source}</small>
-                                                    <Button
-                                                        as="a"
-                                                        href={a.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        variant="outline-primary"
-                                                        size="sm"
-                                                    >
-                                                        Leer artículo
-                                                    </Button>
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                ))}
-                            </Row>
-
-                            {/* Carrusel en móvil */}
-                            <div className="d-md-none">
-                                <Carousel interval={5000} indicators>
-                                    {externalArticles.slice(0, 3).map((a, i) => (
-                                        <Carousel.Item key={i}>
-                                            <Card className="custom-card article-card mx-2">
-                                                <Card.Body className="d-flex flex-column">
-                                                    <Card.Title className="mb-2">{a.title}</Card.Title>
-                                                    <Card.Text className="text-muted mb-3">
-                                                        {a.desc}
-                                                    </Card.Text>
-                                                    <div className="mt-auto d-flex justify-content-between align-items-center">
-                                                        <small className="text-muted">{a.source}</small>
-                                                        <Button
-                                                            as="a"
-                                                            href={a.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            variant="outline-primary"
-                                                            size="sm"
-                                                        >
-                                                            Leer artículo
-                                                        </Button>
+                                        <Carousel
+                                            interval={7000}
+                                            indicators={false}
+                                            controls={false}
+                                            className="flex-grow-1"
+                                        >
+                                            {[
+                                                {
+                                                    id: 1,
+                                                    name: 'Ita Sanz',
+                                                    rating: 5,
+                                                    text: 'Recomiendo un 1000%, te escuchan y te orientan a problemas donde uno no ve soluciones.',
+            
+                                                },
+                                                {
+                                                    id: 2,
+                                                    name: 'Julio César',
+                                                    rating: 5,
+                                                    text: 'Trabajo serio y profesional. Patricia ejerce su carrera desde una verdadera vocación humanista.',
+                                                }
+                                            ].map((testimonial) => (
+                                                <Carousel.Item key={testimonial.id}>
+                                                    <div className="testimonial-content-card">
+                                                        <div className="rating-stars-card mb-2">
+                                                            {[...Array(5)].map((_, index) => (
+                                                                <span key={index} className={`star ${index < testimonial.rating ? 'filled' : ''}`}>
+                                                                    ★
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        <p className="testimonial-text-card">
+                                                            "{testimonial.text}"
+                                                        </p>
+                                                        <div className="testimonial-author-card">
+                                                            <span className="author-name">{testimonial.name}</span>
+                                                            <span className="mx-2">·</span>
+                                                        </div>
                                                     </div>
-                                                </Card.Body>
-                                            </Card>
-                                        </Carousel.Item>
-                                    ))}
-                                </Carousel>
-                            </div>
-                        </Col>
-                    </Row>
+                                                </Carousel.Item>
+                                            ))}
+                                        </Carousel>
+
+                                        <div className="text-center mt-3">
+                                            <a
+                                                href="https://www.facebook.com/psicologasmaipu"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="view-more-link"
+                                            >
+                                                Ver más reseñas →
+                                            </a>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Container>
                 </section>
+
+
             </Container>
-        </div>
+        </div >
     );
 }

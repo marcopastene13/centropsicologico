@@ -7,6 +7,7 @@ import AboutUsPage from "./pages/AboutUsPage";
 import ContactPage from "./pages/ContactPage";
 import AppNavbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import WhatsAppFloat from './components/WhatsAppFloat';
 import Login from "./components/Login"; // crea este componente según te dí antes
 import AdminEditPanel from "./components/AdminEditPanel";
 import PaymentConfirmation from './pages/PaymentConfirmation';
@@ -77,6 +78,7 @@ export default function App() {
 
       </Routes>
       <Footer />
+      <WhatsAppFloat />
     </Router>
   );
 }

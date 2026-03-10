@@ -18,8 +18,10 @@
 
 .jumbotron-background {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-image: url("/logo192.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -76,15 +78,17 @@
 /* Profesionales */
 
 .custom-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 18px;
   box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
   border: none;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
 .custom-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(160, 180, 170, 0.18);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
 }
 
 
@@ -122,16 +126,6 @@
   color: #52796f;
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
-}
-
-.about-news-section .row.align-items-stretch {
-  height: 200px; /* Define la altura deseada, ajusta a tu gusto */
-}
-
-.about-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 
 .news-card {
@@ -256,41 +250,177 @@
 
 
 /* Cards de artículos más compactas */
-.article-card {
-  border-radius: 14px;
+/* Reemplaza la sección de about-testimonials-section en tu MainPage.css */
+
+/* Sección About y Testimonios - Dos cards */
+.about-testimonials-section {
+  padding: 60px 0;
+  background: #f8faf8;
 }
 
-.article-card .card-body {
-  padding: 0.9rem 1rem;
+/* Cards generales - Estilo igual a professional-card */
+.about-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  padding: 40px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.article-card .card-title {
-  font-size: 0.98rem;
-  line-height: 1.2;
-  margin-bottom: 0.4rem;
+.about-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
 }
 
-.article-card .card-text {
-  font-size: 0.9rem;
-  color: #6c757d;
-  margin-bottom: 0.6rem;
+
+.card-title-custom {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #52796f;
+  margin-bottom: 1rem;
 }
 
-.article-card .btn {
-  padding: 0.3rem 0.6rem;
+.card-text-custom {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #6b7c6a;
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+/* Botón en about-card */
+.about-card .btn {
+  border-radius: 20px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+  margin-top: auto;
+}
+
+.about-card .btn-success {
+  background-color: #84a98c;
+  border: none;
+}
+
+.about-card .btn-success:hover {
+  background-color: #52796f;
+}
+
+/* Cards de testimonios */
+.testimonial-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  border-left: 4px solid #6aa889;
+  padding: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
+  border-left-color: #5a9374;
+}
+
+/* Testimonios dentro de card */
+.testimonial-content-card {
+  padding: 20px;
+  background: #f7f9f8;
+  border-radius: 12px;
+  border-left: 4px solid #84a98c;
+  margin-bottom: 1rem;
+}
+
+.rating-stars-card {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-stars-card .star {
+  font-size: 16px;
+  color: #ddd;
+}
+
+.rating-stars-card .star.filled {
+  color: #ffc107;
+}
+
+.testimonial-text-card {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #52616b;
+  font-style: italic;
+  margin: 15px 0;
+}
+
+.testimonial-author-card {
+  display: flex;
+  align-items: center;
   font-size: 0.85rem;
+  color: #6b7c6a;
 }
+
+.testimonial-author-card .author-name {
+  font-weight: 600;
+  color: #52796f;
+}
+
+.facebook-link {
+  color: #1877f2;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.facebook-link:hover {
+  text-decoration: underline;
+  color: #0c5dbf;
+}
+
+.view-more-link {
+  color: #84a98c;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.3s;
+}
+
+.view-more-link:hover {
+  color: #52796f;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .about-testimonials-section {
+    padding: 40px 0;
+  }
+  
+  .card-title-custom {
+    font-size: 1.3rem;
+  }
+  
+  .card-text-custom {
+    font-size: 0.95rem;
+  }
+  
+  .testimonial-content-card {
+    padding: 15px;
+  }
+}
+
+
 
 .services-section {
   margin-top: 3rem;
 }
 
 .service-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f7f9f8 100%);
-  border-radius: 18px;
-  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
-  border: none;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .service-card:hover {
@@ -317,14 +447,16 @@
   border-radius: 24px;
   border-width: 2px;
   font-weight: 500;
-  border-color: #84a98c !important;   /* verde que ya usas */
+  border-color: #84a98c !important;
+  /* verde que ya usas */
   color: #84a98c !important;
   background-color: transparent;
 }
 
 .hero-secondary-btn:hover,
 .hero-secondary-btn:focus {
-  border-color: #52796f !important;   /* un verde más oscuro para hover */
+  border-color: #52796f !important;
+  /* un verde más oscuro para hover */
   color: white !important;
   background-color: transparent;
 }
@@ -334,8 +466,11 @@
   padding: 12px 32px;
   font-size: 1.2rem;
   font-weight: 500;
-  min-width: 220px;    /* mismo ancho mínimo para los dos */
+  min-width: 220px;
+  /* mismo ancho mínimo para los dos */
 }
+
+
 
 /* Primario (relleno) ya se apoya en .cta-button */
 .cta-button {
@@ -359,6 +494,22 @@
   background-color: transparent;
 }
 
+/* Cards de "¿Por qué elegirnos?" */
+.why-choose-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 30px;
+  text-align: center;
+  height: 100%;
+}
+
+.why-choose-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
+}
 /*contact*/
 
 /* La fila debe estirar columnas */
@@ -389,7 +540,8 @@
 }
 
 .contact-whatsapp-card {
-  flex-grow: 1;            /* llena el espacio restante */
+  flex-grow: 1;
+  /* llena el espacio restante */
   display: flex;
   flex-direction: column;
 }
