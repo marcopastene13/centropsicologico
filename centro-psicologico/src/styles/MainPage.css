@@ -269,9 +269,9 @@
 }
 
 .about-card:hover {
-  transform: translateY(-3px);
+    transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
-}
+  }
 
 
 .card-title-custom {
@@ -308,7 +308,7 @@
 
 /* Cards de testimonios */
 .testimonial-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 18px;
   box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
   border: none;
@@ -316,13 +316,13 @@
   padding: 30px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   height: 100%;
-}
+  }
 
 .testimonial-card:hover {
-  transform: translateY(-5px);
+    transform: translateY(-5px);
   box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
   border-left-color: #5a9374;
-}
+  }
 
 /* Testimonios dentro de card */
 .testimonial-content-card {
@@ -419,14 +419,19 @@
 
 .service-card {
   height: 100%;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
 }
 
 .service-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(160, 180, 170, 0.18);
-}
+    transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
+  }
 
 .service-card .card-title {
   font-weight: 600;
@@ -507,8 +512,8 @@
 }
 
 .why-choose-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
+    transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18)(160, 180, 170, 0.18);
 }
 /*contact*/
 
@@ -560,4 +565,224 @@
 .contact-col-right .card-body {
   display: flex;
   flex-direction: column;
+}
+
+
+/* ========================================
+   PANEL DE AGENDAMIENTO - COMPACTO Y ALINEADO
+   Diseño horizontal en PC, vertical en móvil
+   ======================================== */
+
+/* Contenedor principal del panel de agendamiento */
+.booking-panel-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+/* Layout 2x2 para desktop, vertical para móvil */
+@media (min-width: 992) {px
+  .booking-panel-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .booking-section {
+    min-width: auto;
+    flex: none;
+  }
+}
+
+/* Cada sección del panel (calendario, datos, horarios) */
+.booking-section {
+  flex: 1;
+  min-width: 300px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e5e5;
+}
+
+/* Títulos de las secciones */
+.booking-section h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d5444;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Calendario compacto */
+.react-calendar {
+  width: 100% !important;
+  border: none !important;
+  font-family: inherit !important;
+}
+
+.react-calendar__tile {
+  padding: 10px 5px !important;
+  font-size: 0.9rem !important;
+  border-radius: 8px !important;
+}
+
+.react-calendar__tile:hover {
+  background: #e8f5f0 !important;
+}
+
+.react-calendar__tile--active {
+  background: #6aa889 !important;
+  color: white !important;
+}
+
+/* Formulario de datos compacto */
+.client-data-form .form-group {
+  margin-bottom: 15px;
+}
+
+.client-data-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d5444;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.client-data-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s;
+}
+
+.client-data-form input:focus {
+  outline: none;
+  border-color: #6aa889;
+  box-shadow: 0 0 0 3px rgba(106, 168, 137, 0.1);
+}
+
+/* Horarios compactos */
+.time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.time-slot-button {
+  padding: 10px;
+  border: 2px solid #e5e5e5;
+  background: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5a6c64;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.time-slot-button:hover {
+  border-color: #6aa889;
+  background: #f0f8f5;
+  transform: translateY(-2px);
+}
+
+.time-slot-button.selected {
+  background: #6aa889;
+  border-color: #6aa889;
+  color: white;
+}
+
+/* Card de resumen más compacta */
+.booking-summary {
+  background: linear-gradient(135deg, #6aa889 0%, #5a9374 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.booking-summary h5 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: white;
+}
+
+.booking-summary .summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.booking-summary .summary-item:last-child {
+  border-bottom: none;
+}
+
+.booking-summary .summary-label {
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.booking-summary .summary-value {
+  font-weight: 500;
+}
+
+/* Botón de confirmación compacto pero llamativo */
+.btn-confirm-whatsapp {
+  width: 100%;
+  background: linear-gradient(135deg, #25d366 0%, #20ba5a 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 15px 30px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.btn-confirm-whatsapp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+/* Responsive - En móviles apilamos verticalmente */
+@media (max-width: 992px) {
+  .booking-panel-row {
+    flex-direction: column;
+  }
+  
+  .booking-section {
+    min-width: 100%;
+  }
+  
+  .time-slots-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .booking-section {
+    padding: 15px;
+  }
+  
+  .booking-section h5 {
+    font-size: 1rem;
+  }
+  
+  .btn-confirm-whatsapp {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
 }

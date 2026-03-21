@@ -1,11 +1,12 @@
 import { Container, Button, Row, Col, Card, Badge, Form, Image, Nav } from "react-bootstrap";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import '../styles/ProfessionalDetail.css';
 import { useParams } from "react-router-dom";
 import { useMemo, useState, useEffect } from 'react';
-import { notifyProfessionalPayment, notifyClientPayment, generateTransactionId, saveTransactionRecord } from '../utils/notificationService';
+
 import ProfessionalCVModal from "../components/ProfessionalCVModal";
-import PaymentMethodModal from "../components/PaymentMethodModal";
+
 
 
 const ProfessionalDetail = () => {
@@ -13,14 +14,15 @@ const ProfessionalDetail = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedService, setSelectedService] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showCVModal, setShowCVModal] = useState(false);
+
+
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [bookingDetails, setBookingDetails] = useState(null);
   const [activeTab, setActiveTab] = useState('services');
-  
+    const [showCVModal, setShowCVModal] = useState(false);
+
 
   const serviceDetails = {
     1: {
@@ -62,44 +64,51 @@ const ProfessionalDetail = () => {
       alert('Por favor completa todos los campos');
       return;
     }
-  
-  setBookingDetails({
-    professional,
-    service: selectedService,
-    date: selectedDate,
-    time: selectedTime,
-    client: {
-      name: clientName,
-      email: clientEmail,
-      phone: clientPhone
-    }
-  });
-  
-  setShowPaymentModal(true);
-};
 
-const handlePaymentSuccess = () => {
-  alert('¡Reserva confirmada exitosamente!');
-  // Resetear formulario
-  setClientName('');
-  setClientEmail('');
-  setClientPhone('');
-  setSelectedService(null);
-  setSelectedTime(null);
-  setActiveTab('services');
-};
+    setBookingDetails({
+      professional,
+      service: selectedService,
+      date: selectedDate,
+      time: selectedTime,
+      client: {
+        name: clientName,
+        email: clientEmail,
+        phone: clientPhone
+      }
+    });
+
+
+    // Enviar notificaciones por WhatsApp
+    const doctorPhone = professional.phone || '56912345678'; // Número de la doctora
+
+    
+    const message = `*Nueva Reserva de Hora*%0A%0A*Profesional:* ${professional.name}%0A*Servicio:* ${selectedService}%0A*Fecha:* ${selectedDate.toLocaleDateString('es-CL')}%0A*Hora:* ${selectedTime}%0A%0A*Datos del Paciente:*%0ANombre: ${clientName}%0AEmail: ${clientEmail}%0ATeléfono: ${clientPhone}`;
+    
+    // Abrir WhatsApp para enviar a la doctora
+    window.open(`https://wa.me/${doctorPhone}?text=${message}`, '_blank');
+    
+    // Abrir WhatsApp para enviar al paciente
+    setTimeout(() => {
+      window.open(`https://wa.me/${clientPhone}?text=${message}`, '_blank');
+    }, 1000);
+    
+    alert('¡Reserva confirmada! Se enviarán las notificaciones por WhatsApp.');
+    
+    // Resetear formulario
+    setSelectedService(null);
+    setSelectedDate(null);
+    setSelectedTime('');
+    setClientName('');
+    setClientEmail('');
+    setClientPhone('');
+  };
+
 
 
 
   return (
     <>
-      <div className="professional-header" style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        padding: '60px 20px',
-        marginBottom: '40px',
-        borderRadius: '0 0 20px 20px'
-      }}>
+      <div className="professional-header" >
         <Container>
           <Row className="align-items-center">
             <Col md={4} className="text-center mb-4 mb-md-0">
@@ -130,7 +139,7 @@ const handlePaymentSuccess = () => {
       </div>
 
       <Container className="py-5">
-                <button
+        <button
           onClick={() => setShowCVModal(true)}
           style={{
             background: 'linear-gradient(135deg, #6366f1 0%, #5558d3 100%)',
@@ -210,8 +219,8 @@ const handlePaymentSuccess = () => {
         )}
 
         {activeTab === 'booking' && (
-          <Row>
-            <Col lg={6}>
+          <Row className="booking-panel-row">
+            <Col lg={4} xs={4} md={4}>
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Body>
                   <h5 className="mb-4 fw-bold text-primary">📅 Selecciona una fecha</h5>
@@ -224,7 +233,27 @@ const handlePaymentSuccess = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col lg={6}>
+
+            <Col lg={4} xs={4} md={4}>
+              <Card className="shadow-sm border-0">
+                <Card.Body>
+                  <h5 className="mb-4 fw-bold text-primary">🕐 Selecciona una hora</h5>
+                  <div className="d-grid gap-2">
+                    {availableTimes.map((time) => (
+                      <Button
+                        key={time}
+                        variant={selectedTime === time ? 'primary' : 'outline-primary'}
+                        onClick={() => setSelectedTime(time)}
+                        className="fw-bold"
+                      >
+                        {time}
+                      </Button>
+                    ))}
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col lg={4} xs={4} md={4}>
               <Card className="shadow-sm border-0 mb-4">
                 <Card.Body>
                   <h5 className="mb-4 fw-bold text-primary">👤 Tus datos</h5>
@@ -254,77 +283,46 @@ const handlePaymentSuccess = () => {
                       <Form.Control
                         type="tel"
                         value={clientPhone}
-                        onChange={(e) => setClientPhone(e.target.value)}
-                        placeholder="+56 9 XXXX XXXX"
+                        onChange={(e) => {
+                          let value = e.target.value;
+                          // Si el usuario borra todo, vuelve a +569
+                          if (!value.startsWith('+569')) {
+                            value = '+569';
+                          }
+                          // Solo permite números después del prefijo
+                          const numbers = value.slice(4).replace(/\D/g, '');
+                          setClientPhone('+569' + numbers.slice(0, 8));
+                        }}
+                        placeholder="912345678"
                         className="border-2"
                       />
                     </Form.Group>
+
+                                    <Button
+                  onClick={handleBooking}
+                  size="lg"
+                  className="booking-btn" 
+                >
+                  Reservar Hora →
+                </Button>
                   </Form>
                 </Card.Body>
               </Card>
-
-              {selectedService && (
-                <Card className="shadow-sm border-0 mb-4 bg-light">
-                  <Card.Body>
-                    <h5 className="mb-3 fw-bold">📋 Resumen</h5>
-                    <div className="mb-2"><strong>Servicio:</strong> {selectedService.name}</div>
-                    <div className="mb-2"><strong>Fecha:</strong> {selectedDate.toLocaleDateString('es-CL')}</div>
-                    <div className="mb-2"><strong>Hora:</strong> {selectedTime || 'Selecciona una hora'}</div>
-                    <div className="mb-3"><strong>Monto:</strong> <span style={{ fontSize: '1.3rem', color: '#667eea' }}>\${selectedService.price.toLocaleString()}</span></div>
-                    <Button
-                      onClick={handleBooking}
-                      className="w-100"
-                      size="lg"
-                      style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none', fontWeight: 'bold' }}
-                    >
-                      Confirmar y Pagar →
-                    </Button>
-                  </Card.Body>
-                </Card>
-              )}
             </Col>
           </Row>
         )}
 
-        {activeTab === 'booking' && (
-          <Row className="mt-4">
-            <Col lg={6}>
-              <Card className="shadow-sm border-0">
-                <Card.Body>
-                  <h5 className="mb-4 fw-bold text-primary">🕐 Selecciona una hora</h5>
-                  <div className="d-grid gap-2">
-                    {availableTimes.map((time) => (
-                      <Button
-                        key={time}
-                        variant={selectedTime === time ? 'primary' : 'outline-primary'}
-                        onClick={() => setSelectedTime(time)}
-                        className="fw-bold"
-                      >
-                        {time}
-                      </Button>
-                    ))}
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        )}
       </Container>
 
-      <ProfessionalCVModal 
+      <ProfessionalCVModal
         show={showCVModal}
         onHide={() => setShowCVModal(false)}
         professional={professional}
-      />
+  />
+      </>
+        );
 
-      <PaymentMethodModal
-        show={showPaymentModal}
-        onHide={() => setShowPaymentModal(false)}
-        professional={professional}
-        bookingData={bookingDetails}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
-    </>
-  );
+
+  
 }
 export default ProfessionalDetail;

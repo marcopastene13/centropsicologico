@@ -1,0 +1,73 @@
+/* PROFESSIONAL DETAIL - Panel de Agendamiento */
+
+.booking-panel-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:20px;
+  padding: 0 40px;
+  margin: 0 auto;
+  max-width: 1400px;
+  }
+  /* Professional Header */
+.professional-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 60px 20px;
+  margin-bottom: 40px;
+  border-radius: 0 0 20px 20px;
+}
+
+/* Booking Button */
+.booking-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  font-weight: bold;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+/* Responsivo para tablets y móviles */
+@media (max-width: 992px) {
+  .booking-panel-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.booking-panel-row .card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-panel-row .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-section {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e5e5;
+}
+
+.booking-section h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d5444;
+  margin-bottom: 15px;
+}
+
+
+
+/* Cards cuadradas */
+.booking-panel-row .card {
+  aspect-ratio: 1 / 1;
+  min-height: 380px;
+  max-height: 380px;
+
+}
