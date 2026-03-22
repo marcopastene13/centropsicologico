@@ -57,12 +57,34 @@ const ProfessionalDetail = () => {
   };
 
   const professional = serviceDetails[id] || serviceDetails[1];
-  const availableTimes = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
-
+const availableTimes = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
   const handleBooking = () => {
     if (!selectedService || !selectedDate || !selectedTime || !clientName || !clientEmail) {
       alert('Por favor completa todos los campos');
       return;
+    }
+
+        // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(clientEmail)) {
+      alert('Por favor ingresa un correo electrónico válido');
+      return;
+    }
+
+    // Validar que el nombre solo contenga letras y espacios
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    if (!nameRegex.test(clientName)) {
+      alert('El nombre solo debe contener letras y espacios');
+      return;
+    }
+
+    // Validar formato de teléfono (solo números, puede tener + al inicio)
+    if (clientPhone && clientPhone.trim() !== '') {
+      const phoneRegex = /^\+?[0-9]+$/;
+      if (!phoneRegex.test(clientPhone.replace(/\s/g, ''))) {
+        alert('El teléfono solo debe contener números (puede incluir + al inicio)');
+        return;
+      }
     }
 
     setBookingDetails({
@@ -238,9 +260,10 @@ const ProfessionalDetail = () => {
               <Card className="shadow-sm border-0">
                 <Card.Body>
                   <h5 className="mb-4 fw-bold text-primary">🕐 Selecciona una hora</h5>
-                  <div className="d-grid gap-2">
-                    {availableTimes.map((time) => (
-                      <Button
+                  <div className="time-grid gap-2">
+
+                                    {availableTimes.map((time) => (
+                                          <Button
                         key={time}
                         variant={selectedTime === time ? 'primary' : 'outline-primary'}
                         onClick={() => setSelectedTime(time)}
@@ -250,8 +273,8 @@ const ProfessionalDetail = () => {
                       </Button>
                     ))}
                   </div>
-                </Card.Body>
-              </Card>
+                                  </Card.Body>
+                              </Card>
             </Col>
             <Col lg={4} xs={4} md={4}>
               <Card className="shadow-sm border-0 mb-4">
@@ -279,7 +302,7 @@ const ProfessionalDetail = () => {
                       />
                     </Form.Group>
                     <Form.Group className="mb-4">
-                      <Form.Label>Teléfono (opcional)</Form.Label>
+                      <Form.Label>Teléfono </Form.Label>
                       <Form.Control
                         type="tel"
                         value={clientPhone}
