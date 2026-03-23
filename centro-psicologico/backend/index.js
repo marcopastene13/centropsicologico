@@ -10,7 +10,7 @@ const Options = require('transbank-sdk').Options;
 const Environment = require('transbank-sdk').Environment;
 
 const app = express();
-const SECRET_KEY = "123456";
+const SECRET_KEY = process.env.JWT_SECRET || 'fallback_secret_CHANGE_THIS';
 
 // ===== MIDDLEWARE / DEBUG UNIVERSAL =====
 app.use((req, res, next) => {
