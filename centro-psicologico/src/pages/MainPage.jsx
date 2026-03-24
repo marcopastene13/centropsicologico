@@ -177,7 +177,7 @@ export default function MainPage() {
                                         </p>
                                         <Button
                                             as={Link}
-                                            to="/sobre-nosotros"
+                                            to="/sobrenosotros"
                                             variant="success"
                                             className="mt-auto"
                                         >
