@@ -1,351 +1,295 @@
-import { Container, Button, Row, Col, Card, Badge, Form, Image, Nav } from "react-bootstrap";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { fetchProfesionalById, fetchHorariosDisponibles, crearReserva } from '../services/api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../styles/ProfessionalDetail.css';
-import { useParams } from "react-router-dom";
-import { useMemo, useState, useEffect } from 'react';
 
-import ProfessionalCVModal from "../components/ProfessionalCVModal";
-
-
+const hoy = () => {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+};
 
 const ProfessionalDetail = () => {
   const { id } = useParams();
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState('');
-  const [selectedService, setSelectedService] = useState(null);
+  const navigate = useNavigate();
 
+  const [profesional, setProfesional] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const [clientName, setClientName] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [bookingDetails, setBookingDetails] = useState(null);
-  const [activeTab, setActiveTab] = useState('services');
-    const [showCVModal, setShowCVModal] = useState(false);
+  // Paso 1: fecha
+    const [calMonth, setCalMonth] = useState(new Date().getMonth() + 1);
+  const [calYear, setCalYear] = useState(new Date().getFullYear());
+  const [fecha, setFecha] = useState(hoy());
+  // Paso 2: hora
+  const [horasDisponibles, setHorasDisponibles] = useState([]);
+  const [loadingHoras, setLoadingHoras] = useState(false);
+  const [hora, setHora] = useState('');
+  // Paso 3: datos paciente
+  const [form, setForm] = useState({
+    nombrePaciente: '', emailPaciente: '', telefonoPaciente: '', motivo: ''
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [enviando, setEnviando] = useState(false);
+  const [reservaExitosa, setReservaExitosa] = useState(null);
 
+  useEffect(() => {
+    fetchProfesionalById(id)
+      .then(data => { setProfesional(data); setLoading(false); })
+      .catch(() => { setError('No se pudo cargar el profesional'); setLoading(false); });
+  }, [id]);
 
-  const serviceDetails = {
-    1: {
-      id: 1,
-      name: 'Patricia Santander',
-      title: 'Psicóloga Clínica',
-      image: "/images/professionals/patty.jpg",
-      bio: 'Especialista en terapia cognitivo-conductual con 10 años de experiencia.',
-      services: [
-        { id: 1, name: 'Terapia Individual', price: 80000, duration: 60 },
-        { id: 2, name: 'Terapia de Pareja', price: 100000, duration: 60 },
-        { id: 3, name: 'Consulta Inicial', price: 50000, duration: 45 }
-      ],
-      availability: ['Lunes', 'Miércoles', 'Viernes'],
-      rating: 4.8,
-      reviews: 45
-    },
-    2: {
-      id: 2,
-      name: 'Yasna Valdes',
-      title: 'Psicólogo Especialista en Ansiedad',
-      image: "/images/professionals/yasna.jpg",
-      bio: 'Experto en tratamiento de trastornos de ansiedad y estrés postraumático.',
-      services: [
-        { id: 1, name: 'Terapia Individual', price: 85000, duration: 60 },
-        { id: 2, name: 'Técnicas de Relajación', price: 60000, duration: 45 }
-      ],
-      availability: ['Martes', 'Jueves'],
-      rating: 4.9,
-      reviews: 52
+  useEffect(() => {
+    if (!fecha || !id) return;
+    setHora('');
+    setHorasDisponibles([]);
+    setLoadingHoras(true);
+    fetchHorariosDisponibles(id, fecha)
+      .then(data => { setHorasDisponibles(data.horasDisponibles || []); setLoadingHoras(false); })
+      .catch(() => { setLoadingHoras(false); });
+  }, [fecha, id]);
+
+  const validateForm = () => {
+    const errors = {};
+    if (!form.nombrePaciente.trim()) errors.nombrePaciente = 'El nombre es obligatorio';
+    if (!form.emailPaciente.trim()) {
+      errors.emailPaciente = 'El email es obligatorio';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailPaciente)) {
+      errors.emailPaciente = 'Email invalido';
+    }
+    if (!form.telefonoPaciente.trim()) {
+      errors.telefonoPaciente = 'El telefono es obligatorio';
+        } else if (!/^[+]?[\d\s()-]{7,15}$/.test(form.telefonoPaciente)) {
+      errors.telefonoPaciente = 'Telefono invalido';
+    }
+    return errors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!hora) { toast.error('Debes seleccionar una hora'); return; }
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
+    setFormErrors({});
+    setEnviando(true);
+    try {
+      const resultado = await crearReserva({
+        profesionalId: id, fecha, hora, ...form
+      });
+      setReservaExitosa(resultado);
+      toast.success('Reserva creada exitosamente!');
+    } catch (err) {
+      toast.error(err.message || 'Error al crear la reserva');
+    } finally {
+      setEnviando(false);
     }
   };
 
-  const professional = serviceDetails[id] || serviceDetails[1];
-const availableTimes = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
-  const handleBooking = () => {
-    if (!selectedService || !selectedDate || !selectedTime || !clientName || !clientEmail) {
-      alert('Por favor completa todos los campos');
-      return;
-    }
+  if (loading) return <div className="container py-5 text-center"><div className="spinner-border text-primary"></div><p className="mt-3">Cargando...</p></div>;
+  if (error) return <div className="container py-5 text-center"><p className="text-danger">{error}</p><button className="btn btn-primary" onClick={() => navigate('/profesionales')}>Volver</button></div>;
+  if (!profesional) return null;
 
-        // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(clientEmail)) {
-      alert('Por favor ingresa un correo electrónico válido');
-      return;
-    }
-
-    // Validar que el nombre solo contenga letras y espacios
-    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    if (!nameRegex.test(clientName)) {
-      alert('El nombre solo debe contener letras y espacios');
-      return;
-    }
-
-    // Validar formato de teléfono (solo números, puede tener + al inicio)
-    if (clientPhone && clientPhone.trim() !== '') {
-      const phoneRegex = /^\+?[0-9]+$/;
-      if (!phoneRegex.test(clientPhone.replace(/\s/g, ''))) {
-        alert('El teléfono solo debe contener números (puede incluir + al inicio)');
-        return;
-      }
-    }
-
-    setBookingDetails({
-      professional,
-      service: selectedService,
-      date: selectedDate,
-      time: selectedTime,
-      client: {
-        name: clientName,
-        email: clientEmail,
-        phone: clientPhone
-      }
-    });
-
-
-    // Enviar notificaciones por WhatsApp
-    const doctorPhone = professional.phone || '56912345678'; // Número de la doctora
-
-    
-    const message = `*Nueva Reserva de Hora*%0A%0A*Profesional:* ${professional.name}%0A*Servicio:* ${selectedService}%0A*Fecha:* ${selectedDate.toLocaleDateString('es-CL')}%0A*Hora:* ${selectedTime}%0A%0A*Datos del Paciente:*%0ANombre: ${clientName}%0AEmail: ${clientEmail}%0ATeléfono: ${clientPhone}`;
-    
-    // Abrir WhatsApp para enviar a la doctora
-    window.open(`https://wa.me/${doctorPhone}?text=${message}`, '_blank');
-    
-    // Abrir WhatsApp para enviar al paciente
-    setTimeout(() => {
-      window.open(`https://wa.me/${clientPhone}?text=${message}`, '_blank');
-    }, 1000);
-    
-    alert('¡Reserva confirmada! Se enviarán las notificaciones por WhatsApp.');
-    
-    // Resetear formulario
-    setSelectedService(null);
-    setSelectedDate(null);
-    setSelectedTime('');
-    setClientName('');
-    setClientEmail('');
-    setClientPhone('');
-  };
-
-
-
+  if (reservaExitosa) {
+    return (
+      <div className="container py-5">
+        <div className="row justify-content-center">
+          <div className="col-md-6">
+            <div className="card shadow border-success">
+              <div className="card-body text-center p-5">
+                <div className="mb-3" style={{fontSize:'4rem'}}>&#10003;</div>
+                <h3 className="text-success mb-3">Reserva Confirmada</h3>
+                <p className="mb-1"><strong>Profesional:</strong> {reservaExitosa.reserva?.profesional}</p>
+                <p className="mb-1"><strong>Fecha:</strong> {fecha}</p>
+                <p className="mb-1"><strong>Hora:</strong> {hora}</p>
+                <p className="text-muted mt-3">Recibirás una notificación de confirmación.</p>
+                <button className="btn btn-primary mt-4" onClick={() => navigate('/profesionales')}>Volver a Profesionales</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="professional-header" >
-        <Container>
-          <Row className="align-items-center">
-            <Col md={4} className="text-center mb-4 mb-md-0">
-              <Image
-                src={professional.image}
-                alt={professional.name}
-                roundedCircle
-                width={300}
-                height={300}
-                className="border-5 border-white"
-              />
-            </Col>
-            <Col md={8}>
-              <h1 className="mb-2" style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{professional.name}</h1>
-              <h4 className="mb-3" style={{ fontSize: '1.3rem', opacity: 0.9 }}>{professional.title}</h4>
-              <p className="mb-4" style={{ fontSize: '1.1rem' }}>{professional.bio}</p>
-              <div className="d-flex gap-3">
-                <Badge bg="light" text="dark" className="p-2 fs-6">
-                  ⭐ {professional.rating} ({professional.reviews} reseñas)
-                </Badge>
-                <Badge bg="success" className="p-2 fs-6">
-                  ✓ Verificado
-                </Badge>
-              </div>
-            </Col>
-          </Row>
-        </Container>
+    <div className="container py-4">
+      <ToastContainer position="top-right" autoClose={4000} />
+      {/* Header profesional */}
+      <div className="row mb-4 align-items-center">
+        <div className="col-auto">
+          <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate('/profesionales')}>
+            &larr; Volver
+          </button>
+        </div>
+        <div className="col">
+          <h2 className="mb-0" style={{color:'#4a6fa5'}}>{profesional.nombre}</h2>
+          <p className="text-muted mb-0">{profesional.especialidad}</p>
+        </div>
       </div>
 
-      <Container className="py-5">
-        <button
-          onClick={() => setShowCVModal(true)}
-          style={{
-            background: 'linear-gradient(135deg, #6366f1 0%, #5558d3 100%)',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            marginBottom: '1.5rem',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
-          }}
-        >
-          <span style={{ fontSize: '1.2rem' }}>📄</span>
-          Ver CV Completo
-        </button>
-        <Nav variant="tabs" className="mb-5 border-bottom-2" activeKey={activeTab}>
-          <Nav.Item>
-            <Nav.Link
-              eventKey="services"
-              onClick={() => setActiveTab('services')}
-              className="fs-5 fw-bold"
-              style={{ color: activeTab === 'services' ? '#667eea' : '#666' }}
-            >
-              📋 Servicios
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link
-              eventKey="booking"
-              onClick={() => setActiveTab('booking')}
-              className="fs-5 fw-bold"
-              style={{ color: activeTab === 'booking' ? '#667eea' : '#666' }}
-            >
-              📅 Agendar Cita
-            </Nav.Link>
-          </Nav.Item>
-        </Nav>
+      <form onSubmit={handleSubmit}>
+        {/* 3 CARDS HORIZONTALES */}
+        <div className="row g-4">
 
-        {activeTab === 'services' && (
-          <Row className="g-4">
-            {professional.services.map((service) => (
-              <Col key={service.id} md={6} lg={4}>
-                <Card className="h-100 shadow-sm border-0 hover-shadow" style={{ cursor: 'pointer', transition: 'all 0.3s' }}
-                  onClick={() => {
-                    setSelectedService(service);
-                    setActiveTab('booking');
-                  }}
-                >
-                  <Card.Body>
-                    <Card.Title className="fs-5 fw-bold text-primary mb-3">{service.name}</Card.Title>
-                    <div className="mb-3">
-                      <p className="mb-2"><strong>Precio:</strong> <span style={{ fontSize: '1.5rem', color: '#667eea' }}>\${service.price.toLocaleString()}</span></p>
-                      <p className="mb-0"><strong>Duración:</strong> {service.duration} minutos</p>
-                    </div>
-                    <Button variant="primary" className="w-100" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}>
-                      Agendar →
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        )}
+          {/* CARD 1: FECHA */}
+          <div className="col-12 col-md-4">
+            <div className="card h-100 shadow-sm">
+              <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
+                <h5 className="mb-0">1. Selecciona la Fecha</h5>
+              </div>
+              <div className="card-body fecha-card-body p-2">
+            {/* Navegación mes/año */}
+            <div className="cal-nav">
+              <button type="button" className="cal-nav-btn" onClick={() => {
+                const d = new Date(calYear, calMonth - 1, 1);
+                d.setMonth(d.getMonth() - 1);
+                setCalMonth(d.getMonth() + 1);
+                setCalYear(d.getFullYear());
+              }}>&#8249;</button>
+              <span className="cal-title">
+                {new Date(calYear, calMonth - 1).toLocaleString('es-CL', {month:'long', year:'numeric'})}
+              </span>
+              <button type="button" className="cal-nav-btn" onClick={() => {
+                const d = new Date(calYear, calMonth - 1, 1);
+                d.setMonth(d.getMonth() + 1);
+                setCalMonth(d.getMonth() + 1);
+                setCalYear(d.getFullYear());
+              }}>&#8250;</button>
+            </div>
+            {/* Días de la semana */}
+                                        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px',marginBottom:'3px'}}>
+              {['Lu','Ma','Mi','Ju','Vi','Sá','Do'].map(d => (
+                <div key={d} className="cal-dow">{d}</div>
+              ))}
+            </div>
+            <div className="cal-grid">
+              {(() => {
+                const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
+                const offset = firstDay === 0 ? 6 : firstDay - 1;
+                const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+                const cells = [];
+                for (let i = 0; i < offset; i++) cells.push(<div key={'e'+i} />);
+                for (let d = 1; d <= daysInMonth; d++) {
+                  const dateStr = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                  const todayStr = hoy();
+                  const isPast = dateStr < todayStr;
+                  const isSelected = fecha === dateStr;
+                  cells.push(
+                    <button
+                      key={d}
+                      type="button"
+                      className={`cal-day${isSelected ? ' selected' : ''}${isPast ? ' past' : ''}`}
+                      onClick={() => !isPast && setFecha(dateStr)}
+                      disabled={isPast}
+                    >{d}</button>
+                  );
+                }
+                return cells;
+              })()}
+            </div>
+            {fecha && <p className="cal-selected">Fecha: <strong>{new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}</strong></p>}
+          </div>
+            </div>
+          </div>
 
-        {activeTab === 'booking' && (
-          <Row className="booking-panel-row">
-            <Col lg={4} xs={4} md={4}>
-              <Card className="shadow-sm border-0 mb-4">
-                <Card.Body>
-                  <h5 className="mb-4 fw-bold text-primary">📅 Selecciona una fecha</h5>
-                  <Calendar
-                    onChange={setSelectedDate}
-                    value={selectedDate}
-                    minDate={new Date()}
-                    className="w-100"
-                  />
-                </Card.Body>
-              </Card>
-            </Col>
-
-            <Col lg={4} xs={4} md={4}>
-              <Card className="shadow-sm border-0">
-                <Card.Body>
-                  <h5 className="mb-4 fw-bold text-primary">🕐 Selecciona una hora</h5>
-                  <div className="time-grid gap-2">
-
-                                    {availableTimes.map((time) => (
-                                          <Button
-                        key={time}
-                        variant={selectedTime === time ? 'primary' : 'outline-primary'}
-                        onClick={() => setSelectedTime(time)}
-                        className="fw-bold"
-                      >
-                        {time}
-                      </Button>
+          {/* CARD 2: HORA */}
+          <div className="col-12 col-md-4">
+            <div className="card h-100 shadow-sm">
+              <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
+                <h5 className="mb-0">2. Selecciona la Hora</h5>
+              </div>
+              <div className="card-body">
+                {loadingHoras ? (
+                  <div className="text-center py-3"><div className="spinner-border spinner-border-sm text-primary"></div><p className="small mt-2">Cargando horarios...</p></div>
+                ) : horasDisponibles.length === 0 ? (
+                  <p className="text-center text-muted py-3">No hay horarios disponibles para esta fecha.</p>
+                ) : (
+                  <div className="row g-2">
+                    {horasDisponibles.map(h => (
+                      <div className="col-6" key={h}>
+                        <button
+                          type="button"
+                          className={`btn w-100 ${hora === h ? 'btn-primary' : 'btn-outline-primary'}`}
+                          onClick={() => setHora(h)}
+                        >
+                          {h}
+                        </button>
+                      </div>
                     ))}
                   </div>
-                                  </Card.Body>
-                              </Card>
-            </Col>
-            <Col lg={4} xs={4} md={4}>
-              <Card className="shadow-sm border-0 mb-4">
-                <Card.Body>
-                  <h5 className="mb-4 fw-bold text-primary">👤 Tus datos</h5>
-                  <Form>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Nombre completo</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={clientName}
-                        onChange={(e) => setClientName(e.target.value)}
-                        placeholder="Tu nombre"
-                        className="border-2"
-                      />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Correo electrónico</Form.Label>
-                      <Form.Control
-                        type="email"
-                        value={clientEmail}
-                        onChange={(e) => setClientEmail(e.target.value)}
-                        placeholder="tu@email.com"
-                        className="border-2"
-                      />
-                    </Form.Group>
-                    <Form.Group className="mb-4">
-                      <Form.Label>Teléfono </Form.Label>
-                      <Form.Control
-                        type="tel"
-                        value={clientPhone}
-                        onChange={(e) => {
-                          let value = e.target.value;
-                          // Si el usuario borra todo, vuelve a +569
-                          if (!value.startsWith('+569')) {
-                            value = '+569';
-                          }
-                          // Solo permite números después del prefijo
-                          const numbers = value.slice(4).replace(/\D/g, '');
-                          setClientPhone('+569' + numbers.slice(0, 8));
-                        }}
-                        placeholder="912345678"
-                        className="border-2"
-                      />
-                    </Form.Group>
+                )}
+                {hora && <p className="text-success small mt-2 mb-0">Hora seleccionada: <strong>{hora}</strong></p>}
+              </div>
+            </div>
+          </div>
 
-                                    <Button
-                  onClick={handleBooking}
-                  size="lg"
-                  className="booking-btn" 
+          {/* CARD 3: DATOS PACIENTE */}
+          <div className="col-12 col-md-4">
+            <div className="card h-100 shadow-sm">
+              <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
+                <h5 className="mb-0">3. Tus Datos</h5>
+              </div>
+              <div className="card-body">
+                <div className="mb-3">
+                  <label className="form-label">Nombre completo *</label>
+                  <input
+                    type="text"
+                    className={`form-control ${formErrors.nombrePaciente ? 'is-invalid' : ''}`}
+                    value={form.nombrePaciente}
+                    onChange={e => setForm({...form, nombrePaciente: e.target.value})}
+                    placeholder="Tu nombre"
+                  />
+                  {formErrors.nombrePaciente && <div className="invalid-feedback">{formErrors.nombrePaciente}</div>}
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Email *</label>
+                  <input
+                    type="email"
+                    className={`form-control ${formErrors.emailPaciente ? 'is-invalid' : ''}`}
+                    value={form.emailPaciente}
+                    onChange={e => setForm({...form, emailPaciente: e.target.value})}
+                    placeholder="tu@email.cl"
+                  />
+                  {formErrors.emailPaciente && <div className="invalid-feedback">{formErrors.emailPaciente}</div>}
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Telefono *</label>
+                  <input
+                    type="tel"
+                    className={`form-control ${formErrors.telefonoPaciente ? 'is-invalid' : ''}`}
+                    value={form.telefonoPaciente}
+                    onChange={e => setForm({...form, telefonoPaciente: e.target.value})}
+                    placeholder="+56 9 1234 5678"
+                  />
+                  {formErrors.telefonoPaciente && <div className="invalid-feedback">{formErrors.telefonoPaciente}</div>}
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Motivo de consulta</label>
+                  <textarea
+                    className="form-control"
+                    rows="2"
+                    value={form.motivo}
+                    onChange={e => setForm({...form, motivo: e.target.value})}
+                    placeholder="Describe brevemente tu consulta..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="btn w-100 text-white fw-bold"
+                  style={{backgroundColor:'#4a6fa5'}}
+                  disabled={enviando || !hora}
                 >
-                  Reservar Hora →
-                </Button>
-                  </Form>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        )}
+                  {enviando ? 'Reservando...' : 'Confirmar Reserva'}
+                </button>
+              </div>
+            </div>
+          </div>
 
-      </Container>
+        </div>{/* fin row */}
+      </form>
+    </div>
+  );
+};
 
-      <ProfessionalCVModal
-        show={showCVModal}
-        onHide={() => setShowCVModal(false)}
-        professional={professional}
-  />
-      </>
-        );
-
-
-  
-}
 export default ProfessionalDetail;

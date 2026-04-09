@@ -77,8 +77,8 @@ export const professionals = [
     booked: {},
     modalities: ["presencial", "online"],
     seoDescription: "Psícologa infantil con 10+ años de experiencia. Especialista en TDAH, autismo y terapia familiar.",
-    seoKeywords: ["psícologa infantil", "TDAH", "terapia familiar"]
-        cv: {
+    seoKeywords: ["psícologa infantil", "TDAH", "terapia familiar"],
+      cv: {
       education: [
         { id: 1, degree: "Licenciatura en Psicología", institution: "Universidad de Chile", year: "2012", description: "Formación integral en psicología clínica" },
         { id: 2, degree: "Magister en Psicología Clínica", institution: "PUC", year: "2015", description: "Especialización en terapia cognitivo-conductual" }

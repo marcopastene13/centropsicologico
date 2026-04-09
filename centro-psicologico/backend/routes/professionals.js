@@ -6,6 +6,7 @@ const auth = require('../middlewares/auth');
 // Rutas públicas
 router.get('/', professionalController.getAllProfessionals);
 router.get('/:id', professionalController.getProfessionalById);
+router.get('/:id/availability', professionalController.getAvailability);
 
 // Rutas protegidas (solo admin)
 router.post('/', auth, professionalController.createProfessional);

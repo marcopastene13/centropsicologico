@@ -1,17 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const bookingController = require('../controllers/bookingController');
-const { validateBooking } = require('../middlewares/validate');
-const auth = require('../middlewares/auth');
+const { getAvailableSlots, createBooking, getAllBookings, updateBookingStatus, deleteBooking } = require('../controllers/bookingController');
+const verifyToken = require('../middlewares/auth');
 
-// Rutas públicas
-router.get('/available-slots', bookingController.getAvailableSlots);
-router.post('/', validateBooking, bookingController.createBooking);
-
-// Rutas protegidas (requieren autenticación)
-router.get('/', auth, bookingController.getAllBookings);
-router.get('/:id', auth, bookingController.getBookingById);
-router.put('/:id', auth, bookingController.updateBooking);
-router.delete('/:id', auth, bookingController.deleteBooking);
+router.get('/available', getAvailableSlots);
+router.post('/', createBooking);
+router.get('/', verifyToken, getAllBookings);
+router.patch('/:id/status', verifyToken, updateBookingStatus);
+router.delete('/:id', verifyToken, deleteBooking);
 
 module.exports = router;
