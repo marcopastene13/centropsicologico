@@ -12,8 +12,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
+// CORS dinamico por entorno
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  /\.github\.dev$/,
+];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', /\.github\.dev$/],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
