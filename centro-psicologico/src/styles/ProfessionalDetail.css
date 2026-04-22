@@ -212,3 +212,24 @@
     min-height: auto;
   }
 }
+
+/* CARD SERVICIO */
+.servicio-list {
+  overflow-y: auto;
+  max-height: 100%;
+}
+.servicio-list .btn {
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: all 0.15s;
+  white-space: normal;
+  text-align: left;
+}
+.servicio-list .btn.active,
+.servicio-list .btn-primary {
+  background-color: #4a6fa5 !important;
+  border-color: #4a6fa5 !important;
+  color: #fff !important;
+  font-weight: 600;
+}

@@ -4,6 +4,7 @@ import { fetchProfesionalById, fetchHorariosDisponibles, crearReserva } from '..
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/ProfessionalDetail.css';
+import allServices from '../data/services';
 
 const hoy = () => {
   const d = new Date();
@@ -68,6 +69,7 @@ const ProfessionalDetail = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!servicio) { toast.error('Debes seleccionar un servicio'); return; }
     if (!hora) { toast.error('Debes seleccionar una hora'); return; }
     const errors = validateForm();
     if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
@@ -75,7 +77,7 @@ const ProfessionalDetail = () => {
     setEnviando(true);
     try {
       const resultado = await crearReserva({
-        profesionalId: id, fecha, hora, ...form
+        profesionalId: id, fecha, hora, servicio, ...form
       });
       setReservaExitosa(resultado);
       toast.success('Reserva creada exitosamente!');
@@ -129,11 +131,40 @@ const ProfessionalDetail = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* 3 CARDS HORIZONTALES */}
+        {/* 4 CARDS HORIZONTALES */}
         <div className="row g-4">
 
-          {/* CARD 1: FECHA */}
-          <div className="col-12 col-md-4">
+          {/* CARD 0: SERVICIO */}
+              <div className="col-12 col-md-3">
+                <div className="card h-100 shadow-sm">
+                  <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
+                    <h5 className="mb-0">1. Selecciona el Servicio</h5>
+                  </div>
+                  <div className="card-body d-flex flex-column p-2">
+                    <div className="servicio-list flex-grow-1">
+                      {allServices.map(s => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          className={'btn btn-sm w-100 mb-2 text-start ' + (servicio === s.title ? 'btn-primary active' : 'btn-outline-secondary')}
+                          onClick={() => setServicio(s.title)}
+                        >
+                          <span className="me-2">{s.icon}</span>
+                          {s.title}
+                        </button>
+                      ))}
+                    </div>
+                    {servicio && (
+                      <p className="cal-selected mt-2 mb-0">
+                        <strong>{servicio}</strong>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* CARD 1: FECHA */}
+          <div className="col-12 col-md-3">
             <div className="card h-100 shadow-sm">
               <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
                 <h5 className="mb-0">1. Selecciona la Fecha</h5>
@@ -194,10 +225,10 @@ const ProfessionalDetail = () => {
           </div>
 
           {/* CARD 2: HORA */}
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card h-100 shadow-sm">
               <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
-                <h5 className="mb-0">2. Selecciona la Hora</h5>
+                <h5 className="mb-0">3. Selecciona la Hora</h5>
               </div>
               <div className="card-body">
                 {loadingHoras ? (
@@ -225,7 +256,7 @@ const ProfessionalDetail = () => {
           </div>
 
           {/* CARD 3: DATOS PACIENTE */}
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card h-100 shadow-sm">
               <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
                 <h5 className="mb-0">3. Tus Datos</h5>
