@@ -135,7 +135,7 @@ const ProfessionalDetail = () => {
         <div className="row g-4">
 
           {/* CARD 0: SERVICIO */}
-              <div className="col-12 col-md-3">
+              <div className="col-12 col-sm-6 col-xl-3">
                 <div className="card h-100 shadow-sm">
                   <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
                     <h5 className="mb-0">1. Selecciona el Servicio</h5>
@@ -164,7 +164,7 @@ const ProfessionalDetail = () => {
               </div>
 
               {/* CARD 1: FECHA */}
-          <div className="col-12 col-md-3">
+          <div className="col-12 col-sm-6 col-xl-3">
             <div className="card h-100 shadow-sm">
               <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
                 <h5 className="mb-0">2. Selecciona la Fecha</h5>
@@ -225,7 +225,7 @@ const ProfessionalDetail = () => {
           </div>
 
           {/* CARD 2: HORA */}
-          <div className="col-12 col-md-3">
+          <div className="col-12 col-sm-6 col-xl-3">
             <div className="card h-100 shadow-sm">
               <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
                 <h5 className="mb-0">3. Selecciona la Hora</h5>
@@ -256,7 +256,7 @@ const ProfessionalDetail = () => {
           </div>
 
           {/* CARD 3: DATOS PACIENTE */}
-          <div className="col-12 col-md-3">
+          <div className="col-12 col-sm-6 col-xl-3">
             <div className="card h-100 shadow-sm">
               <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
                 <h5 className="mb-0">3. Tus Datos</h5>
