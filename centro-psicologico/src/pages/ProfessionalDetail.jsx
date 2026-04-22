@@ -167,7 +167,7 @@ const ProfessionalDetail = () => {
           <div className="col-12 col-md-3">
             <div className="card h-100 shadow-sm">
               <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
-                <h5 className="mb-0">1. Selecciona la Fecha</h5>
+                <h5 className="mb-0">2. Selecciona la Fecha</h5>
               </div>
               <div className="card-body fecha-card-body p-2">
             {/* Navegación mes/año */}

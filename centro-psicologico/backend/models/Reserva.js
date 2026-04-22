@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(20),
       allowNull: false
     },
+    servicio: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     motivo: {
       type: DataTypes.TEXT,
       allowNull: true
