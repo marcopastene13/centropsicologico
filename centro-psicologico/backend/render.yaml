@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: centropsicologico-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: FRONTEND_URL
+        value: https://centropsicologicocentenario.cl
