@@ -72,20 +72,35 @@ app.use((err, req, res, next) => {
 });
 
 // Iniciar servidor
+
 const startServer = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log('✅ Base de datos conectada');
-    await sequelize.sync({ alter: false });
-    console.log('✅ Modelos sincronizados');
-    app.listen(PORT, () => {
-      console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-      console.log(`📋 Modo: ${process.env.NODE_ENV || 'production'}`);
-    });
-  } catch (error) {
-    console.error('❌ Error al iniciar servidor:', error);
-    process.exit(1);
-  }
+  // Arrancar Express primero, sin esperar la BD
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+    console.log(`🌍 Modo: ${process.env.NODE_ENV || 'production'}`);
+  });
+
+  // Conectar BD con reintentos en segundo plano
+  const connectDB = async (retries = 10, delay = 3000) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await sequelize.authenticate();
+        console.log('✅ Base de datos conectada');
+        await sequelize.sync({ alter: false });
+        console.log('✅ Modelos sincronizados');
+        return;
+      } catch (error) {
+        console.error(`❌ Intento ${i + 1}/${retries} fallido:`, error.message);
+        if (i < retries - 1) {
+          console.log(`⏳ Reintentando en ${delay / 1000}s...`);
+          await new Promise(res => setTimeout(res, delay));
+        }
+      }
+    }
+    console.error('❌ No se pudo conectar a la base de datos después de varios intentos.');
+  };
+
+  connectDB();
 };
 
 startServer();
