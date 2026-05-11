@@ -125,8 +125,8 @@ const ProfessionalDetail = () => {
           </button>
         </div>
         <div className="col">
-          <h2 className="mb-0" style={{color:'#4a6fa5'}}>{profesional.nombre}</h2>
-          <p className="text-muted mb-0">{profesional.especialidad}</p>
+          <h2 className="mb-0" style={{color:'#4a6fa5'}}>{profesional?.nombre}</h2>
+          <p className="text-muted mb-0">{profesional?.especialidad}</p>
         </div>
       </div>
 
