@@ -89,6 +89,49 @@ const startServer = async () => {
         console.log('✅ Base de datos conectada');
         await sequelize.sync({ alter: false });
         console.log('✅ Modelos sincronizados');
+                // Auto-seed: insertar profesionales si la tabla está vacía
+        try {
+          const { Profesional } = require('./models');
+          const count = await Profesional.count();
+          if (count === 0) {
+            console.log('🌱 Insertando profesionales de seed...');
+            await Profesional.bulkCreate([
+              {
+                nombre: 'Patricia Santander',
+                especialidad: 'Psicologia Clinica - Adultos',
+                descripcion: 'Psicologa clinica especializada en terapia de adultos y manejo de ansiedad. Experiencia en terapia cognitivo-conductual.',
+                telefono: '+56912345678',
+                email: 'patricia.santander@centropsicologico.cl',
+                foto: '/images/professionals/patty.jpg',
+                experiencia: '10 años de experiencia clinica. Especialidad en Peritaje Judicial Forense, Ley VIF.',
+                activo: true
+              },
+              {
+                nombre: 'Yasna Valdes',
+                especialidad: 'Psicologia Clinica - Psicodiagnostico',
+                descripcion: 'Psicologa clinica con mas de 10 años en reparacion de derechos, diagnostico y evaluaciones.',
+                telefono: '+56923456789',
+                email: 'yasna.valdes@centropsicologico.cl',
+                foto: '/images/professionals/yasna.jpg',
+                experiencia: 'Mas de 10 anos de experiencia. Especialidad en Psicodiagnostico, TDAH y vulneracion de derechos.',
+                activo: true
+              },
+              {
+                nombre: 'Stephany Troncoso',
+                especialidad: 'Psicologia Infanto-Juvenil',
+                descripcion: 'Especialista en psicologia infantil y juvenil, con enfoque en intervencion temprana y apoyo familiar.',
+                telefono: '+56934567890',
+                email: 'stephany.troncoso@centropsicologico.cl',
+                foto: '/images/professionals/stephany.jpg',
+                experiencia: 'Especialista en atencion de ninos y adolescentes. Experiencia en colegios y centros de salud.',
+                activo: true
+              }
+            ]);
+            console.log('✅ Profesionales insertados correctamente');
+          }
+        } catch (seedError) {
+          console.error('⚠️ Error al hacer seed de profesionales:', seedError.message);
+        }
         return;
       } catch (error) {
         console.error(`❌ Intento ${i + 1}/${retries} fallido:`, error.error);
