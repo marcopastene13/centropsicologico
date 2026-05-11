@@ -4,7 +4,7 @@ import { fetchProfesionalById, fetchHorariosDisponibles, crearReserva } from '..
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/ProfessionalDetail.css';
-import allServices from '../data/services';
+import { allServices } from '../data/services';
 
 const hoy = () => {
   const d = new Date();
