@@ -8,9 +8,10 @@ let config;
 
 if (process.env.DATABASE_URL) {
   // PRODUCCION: PostgreSQL (Neon, Railway, Render, Supabase, etc.)
+  const dbUrl = process.env.DATABASE_URL.split('?')[0]; // quitar params de SSL
   config = {
     dialect: 'postgres',
-    url: process.env.DATABASE_URL,
+    url: dbUrl,
     logging: false,
     dialectOptions: {
       ssl: {
@@ -30,4 +31,6 @@ if (process.env.DATABASE_URL) {
   };
 }
 
-module.exports = config;
+const sequelize = new (require('sequelize').Sequelize)(config.url || config.storage, config);
+
+module.exports = { sequelize, config };
