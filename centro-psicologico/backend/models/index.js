@@ -1,12 +1,25 @@
 const { Sequelize } = require('sequelize');
 const config = require('../config/database');
 
-const sequelize = new Sequelize({
-  dialect: config.dialect,
-  storage: config.storage,
-  logging: config.logging,
-  pool: config.pool
-});
+let sequelize;
+
+if (config.url) {
+  // Produccion: PostgreSQL con URL
+  sequelize = new Sequelize(config.url, {
+    dialect: config.dialect,
+    logging: config.logging,
+    dialectOptions: config.dialectOptions,
+    pool: config.pool
+  });
+} else {
+  // Desarrollo: SQLite con storage
+  sequelize = new Sequelize({
+    dialect: config.dialect,
+    storage: config.storage,
+    logging: config.logging,
+    pool: config.pool
+  });
+}
 
 const Usuario = require('./Usuario')(sequelize, Sequelize.DataTypes);
 const Profesional = require('./Profesional')(sequelize, Sequelize.DataTypes);
