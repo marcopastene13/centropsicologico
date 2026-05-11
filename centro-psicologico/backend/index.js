@@ -79,6 +79,7 @@ const startServer = async () => {
     console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
     console.log(`🌍 Modo: ${process.env.NODE_ENV || 'production'}`);
   });
+      console.log('🔗 DB URL:', process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 40) + '...' : 'NO DEFINIDA');
 
   // Conectar BD con reintentos en segundo plano
   const connectDB = async (retries = 10, delay = 3000) => {
@@ -90,7 +91,7 @@ const startServer = async () => {
         console.log('✅ Modelos sincronizados');
         return;
       } catch (error) {
-        console.error(`❌ Intento ${i + 1}/${retries} fallido:`, error.message);
+        console.error(`❌ Intento ${i + 1}/${retries} fallido:`, error.error);
         if (i < retries - 1) {
           console.log(`⏳ Reintentando en ${delay / 1000}s...`);
           await new Promise(res => setTimeout(res, delay));
