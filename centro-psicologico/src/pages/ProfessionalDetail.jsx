@@ -26,6 +26,7 @@ const ProfessionalDetail = () => {
   // Paso 2: hora
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [loadingHoras, setLoadingHoras] = useState(false);
+  const [servicio, setServicio] = useState('');
   const [hora, setHora] = useState('');
   // Paso 3: datos paciente
   const [form, setForm] = useState({
