@@ -1,38 +1,119 @@
 const nodemailer = require('nodemailer');
 
+const CENTRO_EMAIL = process.env.CENTRO_EMAIL || 'cconsultapsicologica@gmail.com';
+
+const createTransporter = () => {
+  return nodemailer.createTransporter({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+};
+
 const sendContact = async (req, res) => {
   try {
     const { nombre, email, telefono, mensaje } = req.body;
+
     if (!nombre || !email || !telefono || !mensaje) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
+
     // Validaciones
-    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Correo electronico invalido' });
     }
-      const telRegex = /^[+]?[\d\s()-]{7,15}$/;
+
+    const telRegex = /^[+]?[\d\s()-]{7,15}$/;
     if (!telRegex.test(telefono)) {
       return res.status(400).json({ message: 'Telefono invalido' });
     }
-    // Si hay config de email, enviar
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      const transporter = nodemailer.createTransporter({
-        service: 'gmail',
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-      });
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
-        subject: `Contacto Web - ${nombre}`,
-        html: `<h3>Nuevo mensaje de contacto</h3>
-               <p><b>Nombre:</b> ${nombre}</p>
-               <p><b>Email:</b> ${email}</p>
-               <p><b>Telefono:</b> ${telefono}</p>
-               <p><b>Mensaje:</b> ${mensaje}</p>`
-      });
-    }
+
     console.log(`[CONTACTO] ${nombre} | ${email} | ${telefono}`);
+
+    // Enviar correos si hay config de email
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      const transporter = createTransporter();
+
+      // --- Email 1: Notificacion al centro ---
+      await transporter.sendMail({
+        from: `"Centro Psicologico Centenario" <${process.env.EMAIL_USER}>`,
+        to: CENTRO_EMAIL,
+        subject: `Nuevo mensaje de contacto - ${nombre}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #4a6fa5; padding: 20px; text-align: center;">
+              <h2 style="color: white; margin: 0;">Nuevo mensaje de contacto</h2>
+            </div>
+            <div style="padding: 30px; background-color: #f9f9f9;">
+              <p style="color: #555;">Has recibido un nuevo mensaje desde el formulario de contacto del sitio web.</p>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <tr style="border-bottom: 1px solid #eee;">
+                  <td style="padding: 10px; font-weight: bold; color: #333; width: 140px;">Nombre:</td>
+                  <td style="padding: 10px; color: #555;">${nombre}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee; background-color: #fff;">
+                  <td style="padding: 10px; font-weight: bold; color: #333;">Email:</td>
+                  <td style="padding: 10px; color: #555;"><a href="mailto:${email}" style="color: #4a6fa5;">${email}</a></td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                  <td style="padding: 10px; font-weight: bold; color: #333;">Telefono:</td>
+                  <td style="padding: 10px; color: #555;">${telefono}</td>
+                </tr>
+                <tr style="background-color: #fff;">
+                  <td style="padding: 10px; font-weight: bold; color: #333; vertical-align: top;">Mensaje:</td>
+                  <td style="padding: 10px; color: #555;">${mensaje}</td>
+                </tr>
+              </table>
+              <div style="margin-top: 20px; padding: 15px; background-color: #e8f0fe; border-radius: 6px;">
+                <p style="margin: 0; color: #4a6fa5; font-size: 13px;">Puedes responder directamente a este correo o contactar al paciente en: <strong>${email}</strong></p>
+              </div>
+            </div>
+            <div style="background-color: #4a6fa5; padding: 15px; text-align: center;">
+              <p style="color: white; margin: 0; font-size: 12px;">Centro Psicologico Centenario &mdash; centropsicologicocentenario.cl</p>
+            </div>
+          </div>
+        `
+      });
+
+      // --- Email 2: Confirmacion al cliente ---
+      await transporter.sendMail({
+        from: `"Centro Psicologico Centenario" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Hemos recibido tu mensaje - Centro Psicologico Centenario',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #4a6fa5; padding: 20px; text-align: center;">
+              <h2 style="color: white; margin: 0;">Gracias por contactarnos</h2>
+            </div>
+            <div style="padding: 30px; background-color: #f9f9f9;">
+              <p style="color: #333; font-size: 16px;">Hola <strong>${nombre}</strong>,</p>
+              <p style="color: #555;">Hemos recibido tu mensaje correctamente. Nuestro equipo se pondra en contacto contigo a la brevedad posible.</p>
+              <div style="margin: 25px 0; padding: 20px; background-color: #fff; border-left: 4px solid #4a6fa5; border-radius: 4px;">
+                <p style="margin: 0 0 8px 0; font-weight: bold; color: #333;">Resumen de tu mensaje:</p>
+                <p style="margin: 0; color: #555; font-style: italic;">&ldquo;${mensaje}&rdquo;</p>
+              </div>
+              <p style="color: #555;">Si tienes alguna consulta urgente, puedes contactarnos directamente:</p>
+              <ul style="color: #555; padding-left: 20px;">
+                <li>Telefono: +56 9 1234 5678</li>
+                <li>Email: <a href="mailto:cconsultapsicologica@gmail.com" style="color: #4a6fa5;">cconsultapsicologica@gmail.com</a></li>
+                <li>Horario: Lunes a Viernes, 9:00 - 18:00 hrs</li>
+              </ul>
+            </div>
+            <div style="background-color: #4a6fa5; padding: 15px; text-align: center;">
+              <p style="color: white; margin: 0; font-size: 12px;">Centro Psicologico Centenario &mdash; centropsicologicocentenario.cl</p>
+            </div>
+          </div>
+        `
+      });
+
+      console.log(`[CONTACTO] Emails enviados a ${CENTRO_EMAIL} y ${email}`);
+    } else {
+      console.warn('[CONTACTO] EMAIL_USER o EMAIL_PASS no configurados. No se enviaron correos.');
+    }
+
     res.json({ message: 'Mensaje enviado exitosamente. Nos contactaremos a la brevedad.' });
   } catch (err) {
     console.error('Error sendContact:', err);
