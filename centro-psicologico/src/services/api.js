@@ -1,34 +1,55 @@
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+// Fetch con timeout configurable (default 60s para tolerar Render cold start)
+const fetchWithTimeout = async (url, options = {}, timeoutMs = 60000) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 const getHeaders = (token = null) => {
   const h = { 'Content-Type': 'application/json' };
   if (token) h['Authorization'] = `Bearer ${token}`;
   return h;
 };
 
+// Wake-up: ping silencioso para despertar el servidor Render al cargar la app
+export const wakeUpBackend = () => {
+  fetch(`${API_URL}/health`, { method: 'GET' }).catch(() => {});
+};
+
 // PROFESIONALES
-export const fetchProfesionales = async () => {
-  const res = await fetch(`${API_URL}/professionals`);
+export const getProfessionals = async () => {
+  const res = await fetchWithTimeout(`${API_URL}/professionals`);
   if (!res.ok) throw new Error('Error al cargar profesionales');
   return res.json();
 };
 
+export const fetchProfesionales = getProfessionals;
+
 export const fetchProfesionalById = async (id) => {
-  const res = await fetch(`${API_URL}/professionals/${id}`);
+  const res = await fetchWithTimeout(`${API_URL}/professionals/${id}`);
   if (!res.ok) throw new Error('Profesional no encontrado');
   return res.json();
 };
 
 // HORARIOS DISPONIBLES
 export const fetchHorariosDisponibles = async (profesionalId, fecha) => {
-  const res = await fetch(`${API_URL}/bookings/available?profesionalId=${profesionalId}&fecha=${fecha}`);
+  const res = await fetchWithTimeout(
+    `${API_URL}/bookings/available?profesionalId=${profesionalId}&fecha=${fecha}`
+  );
   if (!res.ok) throw new Error('Error al cargar horarios');
   return res.json();
 };
 
 // CREAR RESERVA
 export const crearReserva = async (datos) => {
-  const res = await fetch(`${API_URL}/bookings`, {
+  const res = await fetchWithTimeout(`${API_URL}/bookings`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify(datos)
@@ -38,61 +59,14 @@ export const crearReserva = async (datos) => {
   return data;
 };
 
-// ADMIN: obtener todas las reservas
-export const fetchReservas = async (token) => {
-  const res = await fetch(`${API_URL}/bookings`, {
-    headers: getHeaders(token)
-  });
-  if (!res.ok) throw new Error('Error al cargar reservas');
-  return res.json();
-};
-
-// ADMIN: actualizar estado reserva
-export const actualizarEstadoReserva = async (id, estado, token) => {
-  const res = await fetch(`${API_URL}/bookings/${id}/status`, {
-    method: 'PATCH',
-    headers: getHeaders(token),
-    body: JSON.stringify({ estado })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Error al actualizar');
-  return data;
-};
-
-// ADMIN: eliminar reserva
-export const eliminarReserva = async (id, token) => {
-  const res = await fetch(`${API_URL}/bookings/${id}`, {
-    method: 'DELETE',
-    headers: getHeaders(token)
-  });
-  if (!res.ok) throw new Error('Error al eliminar');
-  return res.json();
-};
-
-// LOGIN
-export const loginAdmin = async (email, password) => {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({ email, password })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Credenciales incorrectas');
-  return data;
-};
-
 // CONTACTO
 export const enviarContacto = async (datos) => {
-  const res = await fetch(`${API_URL}/contact`, {
+  const res = await fetchWithTimeout(`${API_URL}/contact`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify(datos)
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Error al enviar');
+  if (!res.ok) throw new Error(data.message || 'Error al enviar mensaje');
   return data;
 };
-
-// Aliases para compatibilidad
-export const getProfessionals = fetchProfesionales;
-export const getProfessionalById = fetchProfesionalById;
