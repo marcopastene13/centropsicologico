@@ -37,6 +37,9 @@ app.use('/api/professionals', professionalRoutes);
 app.use('/api/contact', contactRoutes);
 
 // Ruta raiz
+
+// Health check para wake-up del frontend
+app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/', (req, res) => {
   res.json({
     message: 'API Centro Psicologico Centenario',
