@@ -15,6 +15,8 @@ import ProfessionalDetail from './pages/ProfessionalDetail';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactPage from './pages/ContactPage';
 
+import { wakeUpBackend } from './services/api';
+
 // Ruta protegida
 const PrivateRoute = ({ children, token }) => {
   return token ? children : <Navigate to="/login" replace />;
@@ -22,6 +24,11 @@ const PrivateRoute = ({ children, token }) => {
 
 const App = () => {
   const [token, setToken] = useState(() => localStorage.getItem('adminToken') || null);
+
+  // Despertar el backend de Render al iniciar la app
+  useEffect(() => {
+    wakeUpBackend();
+  }, []);
 
   const handleLogin = (newToken) => {
     localStorage.setItem('adminToken', newToken);
@@ -36,25 +43,31 @@ const App = () => {
   return (
     <BrowserRouter>
       <ToastContainer position="top-right" autoClose={4000} />
-      <Navbar token={token} onLogout={handleLogout} />
-      <main style={{minHeight:'80vh'}}>
-        <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/profesionales" element={<ProfessionalsPage />} />
-          <Route path="/profesionales/:id" element={<ProfessionalDetail />} />
-          <Route path="/sobrenosotros" element={<AboutUsPage />} />
-          <Route path="/contacto" element={<ContactPage />} />
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
-          <Route path="/edicion" element={
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/profesionales" element={<ProfessionalsPage />} />
+        <Route path="/profesionales/:id" element={<ProfessionalDetail />} />
+        <Route path="/sobrenosotros" element={<AboutUsPage />} />
+        <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route
+          path="/admin"
+          element={
             <PrivateRoute token={token}>
-              <AdminEditPanel token={token} onLogout={handleLogout} />
+              <AdminEditPanel onLogout={handleLogout} />
             </PrivateRoute>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-      <Footer />
+          }
+        />
+        {/* Alias para compatibilidad con rutas antiguas */}
+        <Route path="/professionals" element={<Navigate to="/profesionales" replace />} />
+        <Route path="/professional/:id" element={<Navigate to="/profesionales" replace />} />
+        <Route path="/about" element={<Navigate to="/sobrenosotros" replace />} />
+        <Route path="/contact" element={<Navigate to="/contacto" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
       <WhatsAppFloat />
+      <Footer />
     </BrowserRouter>
   );
 };
