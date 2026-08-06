@@ -20,7 +20,7 @@ const Login = ({ onLogin }) => {
       onLogin(res.data.token);
       navigate('/admin');
     } catch (err) {
-      setError(err.response?.data?.message || 'Credenciales incorrectas');
+      setError(err.response?.data?.error || 'Credenciales incorrectas');
     } finally {
       setLoading(false);
     }

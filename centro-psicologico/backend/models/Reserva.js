@@ -53,8 +53,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     estado: {
-      type: DataTypes.ENUM('confirmada', 'cancelada', 'completada'),
-      defaultValue: 'confirmada'
+      type: DataTypes.ENUM('pendiente', 'confirmada', 'cancelada', 'completada'),
+      defaultValue: 'pendiente'
     }
   }, {
     tableName: 'reservas',

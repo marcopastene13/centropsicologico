@@ -59,6 +59,37 @@ export const crearReserva = async (datos) => {
   return data;
 };
 
+// GESTION DE RESERVAS (admin, requiere token)
+export const fetchReservas = async (token) => {
+  const res = await fetchWithTimeout(`${API_URL}/bookings`, {
+    headers: getHeaders(token)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || `Error al cargar reservas (${res.status})`);
+  return data;
+};
+
+export const actualizarEstadoReserva = async (id, estado, token) => {
+  const res = await fetchWithTimeout(`${API_URL}/bookings/${id}/status`, {
+    method: 'PATCH',
+    headers: getHeaders(token),
+    body: JSON.stringify({ estado })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || `Error al actualizar reserva (${res.status})`);
+  return data;
+};
+
+export const eliminarReserva = async (id, token) => {
+  const res = await fetchWithTimeout(`${API_URL}/bookings/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(token)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || `Error al eliminar reserva (${res.status})`);
+  return data;
+};
+
 // CONTACTO
 export const enviarContacto = async (datos) => {
   const res = await fetchWithTimeout(`${API_URL}/contact`, {

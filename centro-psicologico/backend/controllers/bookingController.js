@@ -18,7 +18,19 @@ const getAvailableSlots = async (req, res) => {
       attributes: ['hora']
     });
     const horasOcupadas = reservas.map(r => r.hora);
-    const horasDisponibles = HORAS_DISPONIBLES.filter(h => !horasOcupadas.includes(h));
+    let horasDisponibles = HORAS_DISPONIBLES.filter(h => !horasOcupadas.includes(h));
+
+    // Si la fecha consultada es hoy, sacar las horas que ya pasaron
+    const ahora = new Date();
+    const hoyStr = ahora.toISOString().split('T')[0];
+    if (fecha === hoyStr) {
+      const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
+      horasDisponibles = horasDisponibles.filter(h => {
+        const [hh, mm] = h.split(':').map(Number);
+        return (hh * 60 + mm) > horaActual;
+      });
+    }
+
     res.json({ fecha, profesionalId, horasDisponibles });
   } catch (err) {
     console.error('Error getAvailableSlots:', err);
@@ -31,6 +43,13 @@ const createBooking = async (req, res) => {
     const { profesionalId, fecha, hora, nombrePaciente, emailPaciente, telefonoPaciente, motivo } = req.body;
     if (!profesionalId || !fecha || !hora || !nombrePaciente || !emailPaciente || !telefonoPaciente) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+    }
+    if (!HORAS_DISPONIBLES.includes(hora)) {
+      return res.status(400).json({ message: 'Hora invalida' });
+    }
+    const hoyStr = new Date().toISOString().split('T')[0];
+    if (fecha < hoyStr) {
+      return res.status(400).json({ message: 'No puedes reservar en una fecha pasada' });
     }
     // Verificar disponibilidad
     const existente = await Reserva.findOne({
