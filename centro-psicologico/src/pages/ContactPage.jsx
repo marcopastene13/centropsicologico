@@ -1,223 +1,172 @@
-import { Container, Form, Button, Row, Col, Card } from "react-bootstrap";
-import { useState } from "react";
-import emailjs from '@emailjs/browser';
+import React, { useState } from 'react';
+import { enviarContacto } from '../services/api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
+const initialForm = { nombre: '', email: '', telefono: '', mensaje: '' };
 
-const contactInfo = [
-  {
-    title: "Teléfono",
-    value: "+56 9 3273 6893",
-    icon: "📞",
-    link: "tel:+56932736893"
-  },
-  {
-    title: "Email",
-    value: "cconsultapsicologica@gmail.com",
-    icon: "📧",
-    link: "mailto:cconsultapsicologica@gmail.com"
-  },
-  {
-    title: "Dirección",
-    value: "Gral. Ordóñez 155, of. 1104",
-    icon: "📍",
-    link: "https://maps.app.goo.gl/xqfQvmWpq45gDET8A"
-  },
-  {
-    title: "Horarios",
-    value: "Lun-Vie: 9:00-21:00",
-    icon: "🕒",
-    link: null
-  }
-];
+const ContactPage = () => {
+  const [form, setForm] = useState(initialForm);
+  const [errors, setErrors] = useState({});
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
 
-function sendEmail(e) {
-  e.preventDefault();
-
-  emailjs.sendForm(
-    "service_ol2qqqb",    // Reemplaza con tu Service ID
-    "template_grfup76",   // Reemplaza con tu Template ID
-    e.target,
-    "t2XPGSWW8YS9MUwlv"        // Reemplaza con tu User ID
-  )
-  .then(() => {
-    alert("¡Mensaje enviado con éxito! Nos contactaremos contigo pronto.");
-    e.target.reset();
-  })
-  .catch(() => {
-    alert("Error al enviar el mensaje. Intenta nuevamente.");
-  });
-}
-
-export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
+  const validate = () => {
+    const errs = {};
+    if (!form.nombre.trim()) errs.nombre = 'El nombre es obligatorio';
+    else if (form.nombre.trim().length < 3) errs.nombre = 'Nombre demasiado corto';
+    if (!form.email.trim()) {
+      errs.email = 'El email es obligatorio';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errs.email = 'Correo electronico invalido';
+    }
+    if (!form.telefono.trim()) {
+      errs.telefono = 'El telefono es obligatorio';
+        } else if (!/^[+]?[\d\s()-]{7,15}$/.test(form.telefono)) {
+      errs.telefono = 'Telefono invalido (ej: +56 9 1234 5678)';
+    }
+    if (!form.mensaje.trim()) errs.mensaje = 'El mensaje es obligatorio';
+    else if (form.mensaje.trim().length < 10) errs.mensaje = 'El mensaje es muy corto';
+    return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí puedes manejar el envío del formulario
-    console.log('Datos del formulario:', formData);
-    alert('Mensaje enviado. Te contactaremos pronto.');
-    // Resetear formulario
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    const errs = validate();
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    setErrors({});
+    setEnviando(true);
+    try {
+      const res = await enviarContacto(form);
+      toast.success(res.message || 'Mensaje enviado exitosamente!');
+      setForm(initialForm);
+      setEnviado(true);
+    } catch (err) {
+      toast.error(err.message || 'Error al enviar el mensaje');
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
-    <Container className="mt-4">
-      {/* Header */}
-      <div className="text-center mb-5">
-        <h1 className="display-4 mb-3">Contacto</h1>
-        <p className="lead">
-          Estamos aquí para ayudarte. No dudes en contactarnos.
-        </p>
+    <div className="container py-5">
+      <ToastContainer position="top-right" autoClose={4000} />
+      <div className="row justify-content-center">
+        <div className="col-md-8">
+          <div className="text-center mb-4">
+            <h2 style={{color:'#4a6fa5'}}>Contactanos</h2>
+            <p className="text-muted">Estamos disponibles para responder tus dudas y consultas.</p>
+          </div>
+
+          <div className="row g-4">
+            {/* Info de contacto */}
+            <div className="col-md-4">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body">
+                  <h5 style={{color:'#4a6fa5'}}>Informacion</h5>
+                  <hr/>
+                  <p className="mb-2"><strong>Direccion:</strong><br/>Los Libertadores 123, Santiago</p>
+                  <p className="mb-2"><strong>Telefono:</strong><br/>+56 9 1234 5678</p>
+                  <p className="mb-2"><strong>Email:</strong><br/>contacto@centropsicologico.cl</p>
+                  <p className="mb-2"><strong>Horario:</strong><br/>Lunes a Viernes<br/>9:00 - 18:00 hrs</p>
+                  <hr/>
+                  <h6 style={{color:'#4a6fa5'}}>Nuestras Profesionales</h6>
+                  <p className="mb-1 small">Patricia Santander</p>
+                  <p className="mb-1 small">Yasna Valdes</p>
+                  <p className="mb-0 small">Stephany Troncoso</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Formulario */}
+            <div className="col-md-8">
+              <div className="card border-0 shadow-sm">
+                <div className="card-body p-4">
+                  {enviado ? (
+                    <div className="text-center py-4">
+                      <div style={{fontSize:'3rem'}}>&#10003;</div>
+                      <h4 className="text-success mt-2">Mensaje enviado!</h4>
+                      <p className="text-muted">Nos contactaremos contigo a la brevedad.</p>
+                      <button className="btn btn-primary" onClick={() => setEnviado(false)}>Enviar otro mensaje</button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} noValidate>
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <label className="form-label">Nombre completo *</label>
+                          <input
+                            type="text"
+                            name="nombre"
+                            className={`form-control ${errors.nombre ? 'is-invalid' : ''}`}
+                            value={form.nombre}
+                            onChange={handleChange}
+                            placeholder="Tu nombre"
+                          />
+                          {errors.nombre && <div className="invalid-feedback">{errors.nombre}</div>}
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label">Telefono *</label>
+                          <input
+                            type="tel"
+                            name="telefono"
+                            className={`form-control ${errors.telefono ? 'is-invalid' : ''}`}
+                            value={form.telefono}
+                            onChange={handleChange}
+                            placeholder="+56 9 1234 5678"
+                          />
+                          {errors.telefono && <div className="invalid-feedback">{errors.telefono}</div>}
+                        </div>
+                        <div className="col-12">
+                          <label className="form-label">Correo electronico *</label>
+                          <input
+                            type="email"
+                            name="email"
+                            className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                            value={form.email}
+                            onChange={handleChange}
+                            placeholder="tu@email.cl"
+                          />
+                          {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+                        </div>
+                        <div className="col-12">
+                          <label className="form-label">Mensaje *</label>
+                          <textarea
+                            name="mensaje"
+                            className={`form-control ${errors.mensaje ? 'is-invalid' : ''}`}
+                            rows="4"
+                            value={form.mensaje}
+                            onChange={handleChange}
+                            placeholder="Cuuntanos como podemos ayudarte..."
+                          />
+                          {errors.mensaje && <div className="invalid-feedback">{errors.mensaje}</div>}
+                        </div>
+                        <div className="col-12">
+                          <button
+                            type="submit"
+                            className="btn w-100 text-white fw-bold py-2"
+                            style={{backgroundColor:'#4a6fa5'}}
+                            disabled={enviando}
+                          >
+                            {enviando ? 'Enviando...' : 'Enviar Mensaje'}
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <Row>
-        {/* Información de contacto */}
-        <Col md={4} className="mb-4">
-          
-          {contactInfo.map((info, index) => (
-            <Card key={index} className="custom-card mb-3">
-              <Card.Body>
-                <div className="d-flex align-items-center">
-                  <span style={{ fontSize: "1.5rem", marginRight: "15px" }}>
-                    {info.icon}
-                  </span>
-                  <div>
-                    <h6 className="mb-1">{info.title}</h6>
-                    {info.link ? (
-                      <a 
-                        href={info.link} 
-                        className="text-decoration-none"
-                        target={info.link.startsWith('http') ? '_blank' : '_self'}
-                        rel={info.link.startsWith('http') ? 'noopener noreferrer' : undefined}
-                      >
-                        {info.value}
-                      </a>
-                    ) : (
-                      <span>{info.value}</span>
-                    )}
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          ))}
-
-          {/* Enlaces rápidos de WhatsApp */}
-          <Card className="custom-card">
-            <Card.Body>
-              <Card.Title className="mb-3">WhatsApp Directo</Card.Title>
-              <div className="d-grid gap-2">
-                <Button 
-                  href="https://wa.me/56912345678?text=Hola,%20quiero%20información%20sobre%20los%20servicios"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="success"
-                  size="sm"
-                >
-                  Contacto General
-                </Button>
-                <Button 
-                  href="https://wa.me/56912345678?text=Hola,%20quiero%20agendar%20una%20cita"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="outline-success"
-                  size="sm"
-                >
-                  Agendar Cita
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-
-        {/* Formulario de contacto */}
-        <Col md={8}>
-          <Card className="custom-card">
-            <Card.Body>
-              <Card.Title className="mb-4">Envíanos un Mensaje</Card.Title>
-              
-              <Form onSubmit={sendEmail}>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Nombre completo *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="Tu nombre completo"
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Email *</Form.Label>
-                      <Form.Control
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="tu@email.com"
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Teléfono</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="+56 9 1234 5678"
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-4">
-                  <Form.Label>Mensaje *</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={5}
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    placeholder="Cuéntanos en qué podemos ayudarte..."
-                    required
-                  />
-                </Form.Group>
-
-                <div className="d-grid">
-                  <Button variant="primary" type="submit" size="lg">
-                    Enviar Mensaje
-                  </Button>
-                </div>
-              </Form>
-              
-              <div className="text-center mt-3">
-                <small className="text-muted">
-                  * Campos obligatorios. Te responderemos dentro de 24 horas.
-                </small>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+    </div>
   );
-}
+};
+
+export default ContactPage;

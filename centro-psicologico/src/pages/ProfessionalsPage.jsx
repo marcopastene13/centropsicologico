@@ -1,83 +1,108 @@
-import { Container, Card, Button, Row, Col } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { getProfessionals } from '../services/api';
 
-const professionals = [
-  {
-    id: 1,
-    name: "Patricia Santander",
-    desc: "Psicóloga clínica especializada en terapia de adultos y manejo de ansiedad. 10 años de experiencia.",
-    img: "/images/patty.jpg",
-    specialties: ["Peritaje judicial forense", "Ley Karin", "Terapia de adultos"]
-  },
-  {
-    id: 2,
-    name: "Yasna Valdes",
-    desc: "Psicóloga clínica con más de 10 años en reparación de derechos, diagnóstico y manejo de trastornos.",
-    img: "/images/yasna.jpg",
-    specialties: ["Psicodiagnóstico", "TDAH", "Vulneración de derechos"]
-  },
-  {
-    id: 3,
-    name: "Stephany Troncoso",
-    desc: "Psicóloga clínica infanto juvenil, especializada en trastornos emocionales, conducta, desarrollo y orientación familiar y vocacional.",
-    img: "/images/stephany.jpg",
-    specialties: ["Psicología infantil", "TDAH", "Terapia familiar"]
+const ProfessionalsPage = () => {
+  const [professionals, setProfessionals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [slowLoad, setSlowLoad] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Si tarda mas de 5s, mostrar mensaje de aviso
+    const slowTimer = setTimeout(() => setSlowLoad(true), 5000);
+
+    const fetchProfesionales = async () => {
+      try {
+        const res = await getProfessionals();
+        setProfessionals(Array.isArray(res) ? res : (res.data || res.profesionales || []));
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setError('No se pudo cargar el equipo. Por favor intenta nuevamente.');
+        toast.error('No se pudo cargar el equipo de profesionales.');
+      } finally {
+        setLoading(false);
+        clearTimeout(slowTimer);
+        setSlowLoad(false);
+      }
+    };
+
+    fetchProfesionales();
+    return () => clearTimeout(slowTimer);
+  }, []);
+
+  if (loading) {
+    return (
+      <Container className="text-center py-5" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <Spinner animation="border" variant="primary" style={{ width: '3rem', height: '3rem' }} />
+        <p className="mt-3 fw-semibold" style={{ color: '#9271c2' }}>Cargando equipo...</p>
+        {slowLoad && (
+          <div className="mt-2 px-3 py-2 rounded" style={{ background: '#f0ebfa', maxWidth: 380 }}>
+            <p className="mb-1" style={{ fontSize: '0.9rem', color: '#6c4f9e' }}>
+              El servidor esta despertando, esto puede tardar hasta 1 minuto.
+            </p>
+            <p className="mb-0" style={{ fontSize: '0.85rem', color: '#888' }}>
+              Gracias por tu paciencia.
+            </p>
+          </div>
+        )}
+      </Container>
+    );
   }
-];
 
-export default function ProfessionalsPage() {
+  if (error) {
+    return (
+      <Container className="text-center py-5" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: '3rem' }}>😔</div>
+        <p className="mt-3" style={{ color: '#e74c3c' }}>{error}</p>
+        <Button variant="outline-primary" onClick={() => window.location.reload()}>
+          Intentar nuevamente
+        </Button>
+      </Container>
+    );
+  }
+
   return (
-    <Container className="mt-4">
-      <div className="text-center mb-5">
-        <h1 className="display-4 mb-3">Nuestros Profesionales</h1>
-        <p className="lead">Equipo especializado comprometido con tu bienestar</p>
-      </div>
-      
-      <Row>
+    <Container className="py-5">
+      <h1 className="text-center mb-2" style={{ color: '#9271c2' }}>Nuestro Equipo</h1>
+      <p className="text-center text-muted mb-5">Profesionales especializados listos para acompa&ntilde;arte</p>
+      <Row className="justify-content-center">
         {professionals.map((pro) => (
-          <Col md={4} key={pro.id} className="mb-4">
-            <Card className="custom-card h-100">
-              {pro.img && (
-                <Card.Img
-                  variant="top"
-                  src={pro.img}
-                  alt={`Foto de ${pro.name}`}
-                  style={{ height: "300px", objectFit: "cover" }}
-                />
+          <Col key={pro.id} xs={12} sm={6} lg={4} className="mb-4">
+            <Card className="h-100 shadow-sm border-0" style={{ borderRadius: '12px', overflow: 'hidden', transition: 'transform 0.2s', cursor: 'pointer' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+              {pro.foto && (
+                <div style={{ height: '260px', overflow: 'hidden', background: '#f5f0ff' }}>
+                  <img
+                    src={pro.foto}
+                    alt={pro.nombre}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                </div>
               )}
-              <Card.Body className="d-flex flex-column">
-                <Card.Title className="mb-3">{pro.name}</Card.Title>
-                <Card.Text className="mb-3">{pro.desc}</Card.Text>
-                
-                <div className="mb-3">
-                  <h6>Especialidades:</h6>
-                  <div className="d-flex flex-wrap gap-1">
-                    {pro.specialties.map((specialty, index) => (
-                      <span key={index} className="badge bg-light text-dark border">
-                        {specialty}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="mt-auto">
-                  <div className="d-flex gap-2 justify-content-center">
-                    <Button as={Link} to={`/profesionales/${pro.id}`} variant="primary">
-                      Ver Perfil
-                    </Button>
-                  </div>
-                </div>
+              <Card.Body className="d-flex flex-column p-4">
+                <Card.Title style={{ color: '#5a3d8a', fontWeight: 700 }}>{pro.nombre}</Card.Title>
+                <Card.Subtitle className="mb-2" style={{ color: '#9271c2', fontWeight: 500 }}>{pro.especialidad}</Card.Subtitle>
+                <Card.Text className="text-muted flex-grow-1" style={{ fontSize: '0.92rem' }}>{pro.descripcion}</Card.Text>
+                <Button
+                  as={Link}
+                  to={`/profesionales/${pro.id}`}
+                  style={{ background: '#9271c2', border: 'none', borderRadius: '8px', fontWeight: 600, marginTop: 'auto' }}
+                >
+                  Ver Perfil y Reservar
+                </Button>
               </Card.Body>
             </Card>
           </Col>
         ))}
       </Row>
-      
-      <div className="text-center mt-5">
-        <Button href="/contacto" variant="outline-primary" size="lg" color="#9271c2">
-          ¿No encuentras lo que buscas? Contáctanos
-        </Button>
-      </div>
     </Container>
   );
-}
+};
+
+export default ProfessionalsPage;

@@ -1,82 +1,75 @@
-import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useParams } from "react-router-dom";
-import MainPage from "./pages/MainPage";
-import ProfessionalsPage from "./pages/ProfessionalsPage";
-import ProfessionalDetail from "./pages/ProfessionalDetail";
-import AboutUsPage from "./pages/AboutUsPage";
-import ContactPage from "./pages/ContactPage";
-import AppNavbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import Login from "./components/Login"; // crea este componente según te dí antes
-import AdminEditPanel from "./components/AdminEditPanel";
-import PaymentConfirmation from './pages/PaymentConfirmation';
-import TransferConfirmation from './pages/TransferConfirmation';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-// En tus rutas:
-<Route path="/payment/confirmation" element={<PaymentConfirmation />} />
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import WhatsAppFloat from './components/WhatsAppFloat';
+import Login from './components/Login';
+import AdminEditPanel from './components/AdminEditPanel';
 
+import MainPage from './pages/MainPage';
+import ProfessionalsPage from './pages/ProfessionalsPage';
+import ProfessionalDetail from './pages/ProfessionalDetail';
+import AboutUsPage from './pages/AboutUsPage';
+import ContactPage from './pages/ContactPage';
 
-function PrivateRoute({ token, children }) {
-  if (!token) return <Navigate to="/login" replace />;
-  return children;
-}
+import { wakeUpBackend } from './services/api';
 
-function EditProfessionalWrapper({ token, onLogout }) {
-  const { id } = useParams();
-  return <EditProfessional id={id} token={token} onLogout={onLogout} />;
-}
+// Ruta protegida
+const PrivateRoute = ({ children, token }) => {
+  return token ? children : <Navigate to="/login" replace />;
+};
 
-export default function App() {
-  const [token, setToken] = useState(null);
+const App = () => {
+  const [token, setToken] = useState(() => localStorage.getItem('adminToken') || null);
 
+  // Despertar el backend de Render al iniciar la app
   useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    if (savedToken) setToken(savedToken);
+    wakeUpBackend();
   }, []);
 
-  const handleLogin = (token) => {
-    setToken(token);
-    localStorage.setItem("token", token);
+  const handleLogin = (newToken) => {
+    localStorage.setItem('adminToken', newToken);
+    setToken(newToken);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('adminToken');
     setToken(null);
   };
 
   return (
-    <Router>
-      <AppNavbar />
+    <BrowserRouter>
+      <ToastContainer position="top-right" autoClose={4000} />
+      <Navbar />
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/profesionales" element={<ProfessionalsPage />} />
         <Route path="/profesionales/:id" element={<ProfessionalDetail />} />
         <Route path="/sobrenosotros" element={<AboutUsPage />} />
         <Route path="/contacto" element={<ContactPage />} />
-        <Route path="/payment/confirmation" element={<PaymentConfirmation />} />
-        <Route path="/transfer/confirmation" element={<TransferConfirmation />} />
-
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
-
         <Route
-          path="/edit/:id"
+          path="/admin"
           element={
             <PrivateRoute token={token}>
-              <EditProfessionalWrapper token={token} onLogout={handleLogout} />
+              <AdminEditPanel onLogout={handleLogout} />
             </PrivateRoute>
           }
         />
-        <Route
-          path="/edicion"
-          element={
-            <PrivateRoute token={token}>
-              <AdminEditPanel token={token} onLogout={handleLogout} />
-            </PrivateRoute>
-          }
-        />
-
+        {/* Alias para compatibilidad con rutas antiguas */}
+        <Route path="/professionals" element={<Navigate to="/profesionales" replace />} />
+        <Route path="/professional/:id" element={<Navigate to="/profesionales" replace />} />
+        <Route path="/about" element={<Navigate to="/sobrenosotros" replace />} />
+        <Route path="/contact" element={<Navigate to="/contacto" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <WhatsAppFloat />
       <Footer />
-    </Router>
+    </BrowserRouter>
   );
-}
+};
+
+export default App;

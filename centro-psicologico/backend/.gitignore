@@ -1,0 +1,17 @@
+
+# ==================================
+# Variables de Entorno (FASE 1)
+# ==================================
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Base de datos local
+*.sqlite
+*.db
+

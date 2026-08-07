@@ -4,6 +4,16 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ command }) => {
   return {
+    server: {
+      host: true,
+      allowedHosts: 'all',
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3000',
+          changeOrigin: true,
+        }
+      }
+    },
     plugins: [
       react(),
       // El plugin PWA solo se activa en build (producción)

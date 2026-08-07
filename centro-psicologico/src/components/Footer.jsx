@@ -9,7 +9,12 @@ export default function Footer() {
           <Col md={4} className="mb-3 d-flex flex-column align-items-center">
             <h5 className="text-dark">Centro Psicológico Centenario</h5>
             <p>
-              General Ordoñez 155 of.1104<br />
+            <a
+            href="https://maps.app.goo.gl/xqfQvmWpq45gDET8A"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#6b6b6b", fontWeight: 600 }}>General Ordoñez 155 of.1104, Maipú</a>
+            <br />
               Tel: +56 9 1234 5678<br />
               Email: <a href="mailto:cconsultapsicologica@gmail.com" className="text-muted text-decoration-none">cconsultapsicologica@gmail.com</a>
             </p>

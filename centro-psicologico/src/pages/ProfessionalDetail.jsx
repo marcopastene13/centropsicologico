@@ -1,563 +1,380 @@
-import { Container, Button, Row, Col, Card, Badge, Form } from "react-bootstrap";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-import { useParams } from "react-router-dom";
-import { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { fetchProfesionalById, fetchHorariosDisponibles, crearReserva } from '../services/api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import '../styles/ProfessionalDetail.css';
+import { getPricingFor, formatCLP } from '../data/pricing';
 
-// Configura tus links y precios aquí
-const serviceDetails = {
-  presencial: {
-    label: "Terapia Presencial",
-    description: "Sesión presencial en consulta, espacio privado y seguro en Maipú.",
-    price: "$25.000"
-    // linkPago: "https://www.mercadopago.cl/checkout?preference_id=xxx"
-  },
-  online: {
-    label: "Terapia Online",
-    description: "Sesión por videollamada, flexibilidad para pacientes en todo Chile.",
-    price: "$20.000"
-    // linkPago: "https://www.mercadopago.cl/checkout?preference_id=yyy"
-  },
+const hoy = () => {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
 };
 
-const professionals = [
-  {
-    id: 1,
-    name: "Patricia Santander",
-    title: "Psicóloga Clínica",
-    img: "/images/patty.jpg",
-    whatsapp: "56932736893",
-    bio: "Patricia Santander, Directora y Psicóloga Clínica desde 2016 en Maipú, especialista en psicodiagnóstico, terapia individual y víctimas de ASI. También ejerce como Perito Judicial Forense, elaborando informes y evaluaciones en contextos penales y familiares.",
-    specialties: ["Psicodiagnóstico avanzado", "Ley Karin", "Peritaje judicial forense", "Evaluación en contextos penales y familiares"],
-    education: [
-      "Diplomado en Peritaje Psicológico y Social en Contexto Judicial | Universidad Andrés Bello (UNAB) | 2023",
-      "Diplomado Internacional Estrategias Clínicas Terapia Breve | ADIPA | 2021",
-      "Curso Peritaje Psicológico en contexto familiar  | Instituto Virtulys | 2021",
-      "Curso Psicopatología Forense: Herramientas para la Evaluación Pericial Psicológica | Instituto Grupo Palermo | 2018",
-      "Título Profesional de Psicóloga con Grado Académico de Licenciada en Psicología | Universidad de Las Américas(UDLA) | 2015",
-      "Seminario “Psicología Forense y Jurídica” | Universidad Bernardo O'Higgins (UBO) | 2015",
-      "Seminario “Expresiones de la Violencia de Género” | Universidad de Concepción (UDC) | 2015",
-      "Seminario “Autocuidado y Manejo de las Emociones en Niños Preadolescentes” | Universidad de Las Américas(UDLA) | 2013",
-      "Seminario “Apego en la Primera Infancia” | Universidad de Chile (UDCH) | 2012",
-      "Cátedra Grafología | Universidad de Las Américas (UDLA) | 2012",
-      "Especialización en investigación Ley Karin con perspectiva de género"
-    ],
-    scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
-    workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
-    slots: { start: "09:00", end: "20:00", intervalMins: 60 }, // cada 60m
-    exceptions: {
-    },
-    booked: {
-    },
-    modalities: ["presencial", "online"],
-  },
-  {
-    id: 2,
-    name: "Yasna Valdes",
-    title: "Psicólogo Infantil",
-    img: "/images/yasna.jpg",
-    whatsapp: "56987654321",
-    bio: "Psicóloga clínica egresada con distinción máxima con más de 10 años de experiencia. Especialista en tratamiento de procesos de reparación en vulneración de derechos, abordaje de trastornos del ánimo y conducta. Experta en psicodiagnóstico y trabajo en equipos multidisciplinarios.",
-    specialties: ["Psicología Infantil", "TDAH", "Trastornos del Espectro Autista", "Terapia Familiar"],
-    education: [
-      "Psicóloga clínica",
-      "Diplomada en Salud Mental",
-      "Diplomada en Pruebas Psicológicas y Proyectivas",
-      "Post-título en Infancia, Adolescencia y Familia",
-      "Diplomada en Derechos Humanos",
-      "Diplomada en Drogodependencias y Reducción de Daños",
-      "Diplomada en Peritaje Social y Psicológico",
-      "Diploma en Herramientas Psicolaborales",
-      "Diplomada en Neurodesarrollo",
-      "Acreditada en Test WISC-V",
-      "Acreditada en Test ADOS-2",
-      "Acreditada en Test ADI-R",
-      "Zulliger",
-      "PBLL",
-      "TRO",
-      "CAT-A/H"
-    ],
-    scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
-    workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
-    slots: { start: "09:00", end: "20:00", intervalMins: 60 }, // cada 60m
-    exceptions: {
-    },
-    booked: {
-    },
-    modalities: ["presencial", "online"],
-  },
-  {
-    id: 3,
-    name: "Stephany Troncoso",
-    title: "Psicólogo Infantil",
-    img: "/images/stephany.jpg",
-    whatsapp: "56987654321",
-    bio: "Con formación en psicología clínica y especialización en el ámbito infanto juvenil, Stephany Troncoso se destaca por su enfoque integral y empático en la atención de niños, niñas y adolescentes. Posee diplomados en Etnicidad y Género y en Terapia Infanto Juvenil, que respaldan su mirada inclusiva y respetuosa de la diversidad.",
-    specialties: ["Psicología Infantil", "TDAH", "Trastornos del Espectro Autista", "Terapia Familiar"],
-    education: [
-      "Psicóloga Clínica Infanto Juvenil.",
-      "Diplomado en Etnicidad y Género.",
-      "Diplomado en Terapia Infanto Juvenil.",
-      "Formación continua en temáticas de desarrollo infantil, habilidades parentales y salud mental adolescente.",
-      "Participación en seminarios sobre regulación emocional, autoestima y orientación vocacional."
-    ],
-    scheduleLabel: "Lunes a Viernes: 9:00 - 20:00",
-    workingDays: [1, 2, 3, 4, 5], // 1=Lunes ... 5=Viernes
-    slots: { start: "09:00", end: "20:00", intervalMins: 60 }, // cada 60m
-    exceptions: {
-    },
-    booked: {
-    },
-    modalities: ["presencial"],
-  },
-];
-
-// Utils
-const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
-const toKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-function generateTimeSlots(start, end, intervalMins) {
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
-  const slots = [];
-  let cur = new Date(0, 0, 0, sh, sm, 0);
-  const endD = new Date(0, 0, 0, eh, em, 0);
-  while (cur <= endD) {
-    slots.push(`${pad(cur.getHours())}:${pad(cur.getMinutes())}`);
-    cur = new Date(cur.getTime() + intervalMins * 60000);
-  }
-  if (slots.length > 1 && slots[slots.length - 1] === end) slots.pop();
-  return slots;
-}
-
-export default function ProfessionalDetail() {
+const ProfessionalDetail = () => {
   const { id } = useParams();
-  const professional = professionals.find((p) => p.id === parseInt(id));
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [selectedModality, setSelectedModality] = useState(professional?.modalities[0]);
+  const navigate = useNavigate();
 
-  // Form state
+  const [profesional, setProfesional] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Paso 1: fecha
+    const [calMonth, setCalMonth] = useState(new Date().getMonth() + 1);
+  const [calYear, setCalYear] = useState(new Date().getFullYear());
+  const [fecha, setFecha] = useState(hoy());
+  // Paso 2: hora
+  const [horasDisponibles, setHorasDisponibles] = useState([]);
+  const [loadingHoras, setLoadingHoras] = useState(false);
+  const [sesionId, setSesionId] = useState('');
+  const [hora, setHora] = useState('');
+  // Paso 3: datos paciente
   const [form, setForm] = useState({
-    nombre: "",
-    rut: "",
-    correo: "",
-    telefono: "",
-    detalles: "",
+    nombrePaciente: '', emailPaciente: '', telefonoPaciente: '', motivo: ''
   });
-  const [formTouched, setFormTouched] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const [enviando, setEnviando] = useState(false);
+  const [reservaExitosa, setReservaExitosa] = useState(null);
 
   useEffect(() => {
-    setSelectedSlot(null);
-  }, [selectedDate]);
+    fetchProfesionalById(id)
+      .then(data => { setProfesional(data); setLoading(false); })
+      .catch(() => { setError('No se pudo cargar el profesional'); setLoading(false); });
+  }, [id]);
 
-  const allSlots = useMemo(() => {
-    if (!professional) return [];
-    return generateTimeSlots(
-      professional.slots.start,
-      professional.slots.end,
-      professional.slots.intervalMins
-    );
-  }, [professional]);
+  useEffect(() => {
+    if (!fecha || !id) return;
+    setHora('');
+    setHorasDisponibles([]);
+    setLoadingHoras(true);
+    fetchHorariosDisponibles(id, fecha)
+      .then(data => { setHorasDisponibles(data.horasDisponibles || []); setLoadingHoras(false); })
+      .catch(() => { setLoadingHoras(false); });
+  }, [fecha, id]);
 
-  if (!professional) {
+  const validateForm = () => {
+    const errors = {};
+    if (!form.nombrePaciente.trim()) errors.nombrePaciente = 'El nombre es obligatorio';
+    if (!form.emailPaciente.trim()) {
+      errors.emailPaciente = 'El email es obligatorio';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailPaciente)) {
+      errors.emailPaciente = 'Email invalido';
+    }
+    if (!form.telefonoPaciente.trim()) {
+      errors.telefonoPaciente = 'El telefono es obligatorio';
+        } else if (!/^[+]?[\d\s()-]{7,15}$/.test(form.telefonoPaciente)) {
+      errors.telefonoPaciente = 'Telefono invalido';
+    }
+    return errors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!sesionSeleccionada) { toast.error('Debes seleccionar el tipo de sesión'); return; }
+    if (!hora) { toast.error('Debes seleccionar una hora'); return; }
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
+    setFormErrors({});
+    setEnviando(true);
+    const servicio = `${sesionSeleccionada.label} (${formatCLP(sesionSeleccionada.price)})`;
+    try {
+      const resultado = await crearReserva({
+        profesionalId: id, fecha, hora, servicio, ...form
+      });
+      setReservaExitosa(resultado);
+      toast.success('Reserva creada exitosamente!');
+    } catch (err) {
+      toast.error(err.message || 'Error al crear la reserva');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  if (loading) return <div className="container py-5 text-center"><div className="spinner-border text-primary"></div><p className="mt-3">Cargando...</p></div>;
+  if (error) return <div className="container py-5 text-center"><p className="text-danger">{error}</p><button className="btn btn-primary" onClick={() => navigate('/profesionales')}>Volver</button></div>;
+  if (!profesional) return null;
+
+  const pricing = getPricingFor(profesional?.nombre);
+  const sesionSeleccionada = pricing?.find(p => p.id === sesionId) || null;
+
+  if (reservaExitosa) {
     return (
-      <Container className="mt-4">
-        <Card className="custom-card text-center">
-          <Card.Body>
-            <h2>Profesional no encontrado</h2>
-            <p>El profesional que buscas no existe o ha sido removido.</p>
-            <Button href="/professionals" variant="primary">
-              Ver todos los profesionales
-            </Button>
-          </Card.Body>
-        </Card>
-      </Container>
+      <div className="container py-5">
+        <div className="row justify-content-center">
+          <div className="col-md-6">
+            <div className="card shadow border-success">
+              <div className="card-body text-center p-5">
+                <div className="mb-3" style={{fontSize:'4rem'}}>&#10003;</div>
+                <h3 className="text-success mb-3">Reserva Confirmada</h3>
+                <p className="mb-1"><strong>Profesional:</strong> {reservaExitosa.reserva?.profesional}</p>
+                <p className="mb-1"><strong>Sesión:</strong> {sesionSeleccionada?.label} — {sesionSeleccionada && formatCLP(sesionSeleccionada.price)}</p>
+                <p className="mb-1"><strong>Fecha:</strong> {fecha}</p>
+                <p className="mb-1"><strong>Hora:</strong> {hora}</p>
+                <p className="text-muted mt-3">Recibirás una notificación de confirmación.</p>
+                <button className="btn btn-primary mt-4" onClick={() => navigate('/profesionales')}>Volver a Profesionales</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  const isWeekend = (date) => {
-    const day = date.getDay();
-    return day === 0 || day === 6;
-  };
-  const isWorkingDay = (date) => {
-    const jsDay = date.getDay();
-    const weekday = jsDay === 0 ? 7 : jsDay;
-    return professional.workingDays.includes(weekday);
-  };
-  const isDisabledDay = (date) => {
-    const key = toKey(date);
-    if (professional.exceptions[key]) return true;
-    if (!isWorkingDay(date)) return true;
-    if (date < new Date(new Date().setHours(0, 0, 0, 0))) return true;
-    return false;
-  };
-
-  const key = toKey(selectedDate);
-  const bookedForDay = professional.booked[key] || [];
-  const availableSlots = allSlots.filter((s) => !bookedForDay.includes(s));
-
-  // Mensaje para reserva WhatsApp
-  const whatsappMessage = selectedSlot
-    ? `Hola ${professional.name}, quiero agendar una sesión (${serviceDetails[selectedModality]?.label}) el ${selectedDate.toLocaleDateString()} a las ${selectedSlot}.\n\nNombre: ${form.nombre}\nRUT: ${form.rut}\nCorreo: ${form.correo}\nTeléfono: ${form.telefono}\nDetalles: ${form.detalles}`
-    : `Hola ${professional.name}, me gustaría coordinar una sesión.`;
-
-  // Form validation
-  const isFormValid =
-    form.nombre &&
-    form.rut &&
-    form.correo &&
-    form.telefono &&
-    form.detalles &&
-    selectedSlot;
-
-  const handleInputChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-    setFormTouched(true);
-  };
-
-  const handlePayment = async () => {
-    if (!isFormValid) return;
-
-    try {
-      const buyOrder = `ORD-${Date.now()}`;
-      const sessionId = `SES-${Date.now()}`;
-      const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
-      const returnUrl = `${window.location.origin}/payment/confirmation`;
-
-      const createResponse = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/payment/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount,
-          buyOrder,
-          sessionId,
-          returnUrl,
-        }),
-      });
-
-      const data = await createResponse.json();
-      console.log("Respuesta backend:", data);
-
-      if (!data.token || !data.url) {
-        throw new Error("Token o URL no recibidos del backend");
-      }
-
-      const { token, url } = data;
-
-      // Guardar datos en sessionStorage
-      sessionStorage.setItem('transactionToken', token);
-      sessionStorage.setItem('buyOrder', buyOrder);
-      sessionStorage.setItem('formData', JSON.stringify(form));
-      sessionStorage.setItem('professional', JSON.stringify(professional));
-      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
-      sessionStorage.setItem('selectedSlot', selectedSlot);
-      sessionStorage.setItem('amount', amount);
-
-      // ✅ REDIRIGIR CON TOKEN EN URL
-      window.location.href = `${url}?token_ws=${token}`;
-    } catch (error) {
-      console.error('Error processing payment:', error);
-      alert('Error al procesar el pago. Intenta nuevamente.');
-    }
-  };
-
-  // Función para Transferencia Electrónica
-  const handleTransferencia = async () => {
-    if (!isFormValid) return;
-
-    try {
-      const buyOrder = `ORD-${Date.now()}`;
-      const amount = parseInt(serviceDetails[selectedModality]?.price.replace(/\D/g, ''), 10);
-
-      console.log('Iniciando transferencia electrónica...');
-
-      // Llamar backend para crear reserva con transferencia
-      const response = await fetch('https://shiny-engine-pjvvrg5xqjx3xvr-3000.app.github.dev/api/reservations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          formData: form,
-          professional: {
-            id: professional.id,
-            name: professional.name,
-          },
-          selectedDate: selectedDate.toISOString(),
-          selectedSlot: selectedSlot,
-          selectedModality: selectedModality,
-          amount,
-          buyOrder,
-          paymentMethod: 'TRANSFER', // Marcar como transferencia
-          status: 'PENDING', // Pendiente de confirmación
-        }),
-      });
-
-      const data = await response.json();
-      console.log('Respuesta reserva:', data);
-
-      if (!data.id) {
-        throw new Error(data.error || 'Error al crear reserva');
-      }
-
-      // Guardar en sessionStorage
-      sessionStorage.setItem('reservationId', data.id);
-      sessionStorage.setItem('formData', JSON.stringify(form));
-      sessionStorage.setItem('professional', JSON.stringify(professional));
-      sessionStorage.setItem('selectedDate', selectedDate.toISOString());
-      sessionStorage.setItem('selectedSlot', selectedSlot);
-      sessionStorage.setItem('amount', amount);
-      sessionStorage.setItem('buyOrder', buyOrder);
-      sessionStorage.setItem('paymentMethod', 'TRANSFER');
-
-      // Redirigir a página de transferencia
-      window.location.href = '/transfer/confirmation';
-
-    } catch (error) {
-      console.error('Error:', error);
-      alert(`Error: ${error.message}`);
-    }
-  };
   return (
-    <Container className="mt-4">
-      <Row>
-        <Col md={8}>
-          <Card className="custom-card mb-4">
-            <Row className="g-0">
-              {professional.img && (
-                <Col md={4} className="d-flex flex-column">
-                  <Card.Img
-                    src={professional.img}
-                    alt={`Foto de ${professional.name}`}
-                    style={{ height: "300px", objectFit: "cover" }}
-                    className="rounded-start"
-                  />
-                  <div className="p-3 border-top text-center">
-                    <span style={{ fontWeight: "600" }}>
-                      {`Atiende ${professional.modalities.map(m => serviceDetails[m]?.label || m).join(" y ")}`}
-                    </span>
-                  </div>
-                </Col>
-              )}
-              <Col md={professional.img ? 8 : 12}>
-                <Card.Body>
-                  <Card.Title as="h1">{professional.name}</Card.Title>
-                  <Card.Subtitle className="mb-2 text-muted">
-                    {professional.title}
-                  </Card.Subtitle>
-                  <div className="mb-3">
-                    {professional.specialties.map((sp, i) => (
-                      <Badge key={i} bg="light" text="dark" className="me-2 mb-2">
-                        {sp}
-                      </Badge>
-                    ))}
-                  </div>
-                  <Card.Text>{professional.bio}</Card.Text>
-                  <div className="mb-4">
-                    <h4>Modalidades de Servicio</h4>
-                    <Row>
-                      {professional.modalities.map((mod) => (
-                        <Col xs={12} md={6} key={mod}>
-                          <Card
-                            className={`mb-2 ${selectedModality === mod ? "border-success" : ""}`}
-                            onClick={() => setSelectedModality(mod)}
-                            style={{ cursor: "pointer" }}
-                          >
-                            <Card.Body>
-                              <Card.Title>
-                                {serviceDetails[mod]?.label || mod}
-                              </Card.Title>
-                              <Card.Text>
-                                {serviceDetails[mod]?.description}
-                              </Card.Text>
-                              <Badge bg="info">{serviceDetails[mod]?.price}</Badge>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                  </div>
-                  <div className="mb-3">
-                    <h6>Horarios de Atención:</h6>
-                    <p className="text-muted">{professional.scheduleLabel}</p>
-                  </div>
-                  <div>
-                    <h6>Formación</h6>
-                    <ul className="mb-0">
-                      {professional.education.map((e, i) => (
-                        <li key={i}>{e}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </Card.Body>
-              </Col>
-            </Row>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="custom-card">
-            <Card.Body>
-              <Card.Title className="text-center mb-3">Reservar Sesión</Card.Title>
-              <div className="mb-3">
-                <Calendar
-                  onChange={setSelectedDate}
-                  value={selectedDate}
-                  minDate={new Date()}
-                  tileDisabled={({ date, view }) =>
-                    view === "month" ? isDisabledDay(date) : false
-                  }
-                  className="mx-auto"
-                />
-                <div className="text-center mt-2">
-                  <small className="text-muted">
-                    Fecha seleccionada: <strong>{selectedDate.toLocaleDateString()}</strong>
-                  </small>
-                </div>
+    <div className="container py-4">
+      <ToastContainer position="top-right" autoClose={4000} />
+      {/* Header profesional */}
+      <div className="row mb-4 align-items-center">
+        <div className="col-auto">
+          <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate('/profesionales')}>
+            &larr; Volver
+          </button>
+        </div>
+        <div className="col">
+          <h2 className="mb-0" style={{color:'#4a6fa5'}}>{profesional?.nombre}</h2>
+          <p className="text-muted mb-0">{profesional?.especialidad}</p>
+        </div>
+      </div>
+
+      {/* Barra de progreso */}
+      <div className="progress-steps mb-4">
+        {[
+          { n: 1, label: 'Sesión', done: !!sesionSeleccionada },
+          { n: 2, label: 'Fecha', done: !!fecha },
+          { n: 3, label: 'Hora', done: !!hora },
+          { n: 4, label: 'Tus datos', done: !!(form.nombrePaciente && form.emailPaciente && form.telefonoPaciente) },
+        ].map((step, idx, arr) => (
+          <React.Fragment key={step.n}>
+            <div className={`step-node${step.done ? ' done' : ''}`}>
+              <span className="step-circle">{step.done ? '✓' : step.n}</span>
+              <span className="step-label">{step.label}</span>
+            </div>
+            {idx < arr.length - 1 && <span className={`step-line${step.done ? ' done' : ''}`} />}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div className="row g-4">
+          <div className="col-lg-8">
+
+            {/* PASO 1: SESION */}
+            <div className="card shadow-sm booking-card mb-4">
+              <div className="card-header booking-card-header">
+                <h5 className="mb-0">1. Elige tu sesión</h5>
               </div>
-              <div className="mb-3">
-                <h6 className="mb-2">Horarios disponibles</h6>
-                {availableSlots.length === 0 ? (
-                  <div className="text-muted small">
-                    No hay horarios disponibles para este día.
+              <div className="card-body">
+                {pricing && pricing.length > 0 ? (
+                  <div className="row g-3">
+                    {pricing.map(item => (
+                      <div className="col-6 col-md-3" key={item.id}>
+                        <button
+                          type="button"
+                          className={`session-card w-100 h-100${sesionId === item.id ? ' selected' : ''}`}
+                          onClick={() => setSesionId(item.id)}
+                        >
+                          {sesionId === item.id && <span className="session-check">✓</span>}
+                          <span className="session-label">{item.label}</span>
+                          <span className="session-price">{formatCLP(item.price)}</span>
+                          {item.note && <span className="session-note">{item.note}</span>}
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="d-flex flex-wrap gap-2">
-                    {availableSlots.map((slot) => (
-                      <Button
-                        key={slot}
-                        variant={selectedSlot === slot ? "success" : "outline-success"}
-                        size="sm"
-                        onClick={() => setSelectedSlot(slot)}
-                      >
-                        {slot}
-                      </Button>
-                    ))}
-                  </div>
+                  <p className="text-muted mb-0">Aún no hay valores cargados para este profesional. Contáctanos para más información.</p>
                 )}
               </div>
+            </div>
 
-              {/* Formulario previo al pago */}
-              <Form className="mb-3">
-                <Form.Group className="mb-2">
-                  <Form.Label>Nombre completo</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="nombre"
-                    value={form.nombre}
-                    onChange={handleInputChange}
-                    placeholder="Ingresa tu nombre completo"
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-2">
-                  <Form.Label>RUT</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="rut"
-                    value={form.rut}
-                    onChange={handleInputChange}
-                    placeholder="12.345.678-9"
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-2">
-                  <Form.Label>Correo electrónico</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="correo"
-                    value={form.correo}
-                    onChange={handleInputChange}
-                    placeholder="ejemplo@correo.com"
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-2">
-                  <Form.Label>Número de teléfono</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="telefono"
-                    value={form.telefono}
-                    onChange={handleInputChange}
-                    placeholder="+56 9 1234 5678"
-                    required
-                    minLength={12}
-                    maxLength={12}
-                  />
-                  {formTouched && form.telefono && form.telefono.length !== 12 && (
-                    <span style={{ color: 'red', fontSize: '0.9em' }}>
-                      El teléfono debe tener exactamente 12 caracteres (ejemplo: +56912345678)
-                    </span>
-                  )}
-                </Form.Group>
-                <Form.Group className="mb-2">
-                  <Form.Label>Detalles</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="detalles"
-                    value={form.detalles}
-                    onChange={handleInputChange}
-                    placeholder="Comenta brevemente tu situación"
-                    required
-                  />
-                </Form.Group>
-              </Form>
-
-              <div className="d-grid gap-2 mt-3">
-                <Button
-                  href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
-                    whatsappMessage
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="success"
-                  size="lg"
-                  disabled={!isFormValid}
-                >
-                  Confirmar por WhatsApp
-                </Button>
-
-                {/* NUEVO: BOTÓN DE TRANSFERENCIA */}
-                <Button
-                  variant="info"
-                  size="lg"
-                  onClick={handleTransferencia}
-                  disabled={!isFormValid}
-                >
-                  Pagar por Transferencia
-                </Button>
-
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={handlePayment}
-                  disabled={!isFormValid}
-                >
-                  Pagar con Tarjeta
-                </Button>
-
-                <Button
-                  href={`https://wa.me/${professional.whatsapp}?text=${encodeURIComponent(
-                    `Hola ${professional.name}, tengo algunas preguntas sobre la terapia.`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="outline-primary"
-                >
-                  Hacer consulta
-                </Button>
+            {/* PASO 2 y 3: FECHA + HORA */}
+            <div className="row g-4 mb-4">
+              <div className="col-md-6">
+                <div className="card h-100 shadow-sm booking-card">
+                  <div className="card-header booking-card-header">
+                    <h5 className="mb-0">2. Elige la fecha</h5>
+                  </div>
+                  <div className="card-body fecha-card-body p-2">
+                    <div className="cal-nav">
+                      <button type="button" className="cal-nav-btn" onClick={() => {
+                        const d = new Date(calYear, calMonth - 1, 1);
+                        d.setMonth(d.getMonth() - 1);
+                        setCalMonth(d.getMonth() + 1);
+                        setCalYear(d.getFullYear());
+                      }}>&#8249;</button>
+                      <span className="cal-title">
+                        {new Date(calYear, calMonth - 1).toLocaleString('es-CL', {month:'long', year:'numeric'})}
+                      </span>
+                      <button type="button" className="cal-nav-btn" onClick={() => {
+                        const d = new Date(calYear, calMonth - 1, 1);
+                        d.setMonth(d.getMonth() + 1);
+                        setCalMonth(d.getMonth() + 1);
+                        setCalYear(d.getFullYear());
+                      }}>&#8250;</button>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px',marginBottom:'3px'}}>
+                      {['Lu','Ma','Mi','Ju','Vi','Sá','Do'].map(d => (
+                        <div key={d} className="cal-dow">{d}</div>
+                      ))}
+                    </div>
+                    <div className="cal-grid">
+                      {(() => {
+                        const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
+                        const offset = firstDay === 0 ? 6 : firstDay - 1;
+                        const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+                        const cells = [];
+                        for (let i = 0; i < offset; i++) cells.push(<div key={'e'+i} />);
+                        for (let d = 1; d <= daysInMonth; d++) {
+                          const dateStr = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                          const todayStr = hoy();
+                          const isPast = dateStr < todayStr;
+                          const isSelected = fecha === dateStr;
+                          cells.push(
+                            <button
+                              key={d}
+                              type="button"
+                              className={`cal-day${isSelected ? ' selected' : ''}${isPast ? ' past' : ''}`}
+                              onClick={() => !isPast && setFecha(dateStr)}
+                              disabled={isPast}
+                            >{d}</button>
+                          );
+                        }
+                        return cells;
+                      })()}
+                    </div>
+                    {fecha && <p className="cal-selected">Fecha: <strong>{new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}</strong></p>}
+                  </div>
+                </div>
               </div>
 
-              <div className="text-center mt-3">
-                <small className="text-muted">
-                  Fines de semana y días no laborales aparecen bloqueados en el calendario.
-                </small>
+              <div className="col-md-6">
+                <div className="card h-100 shadow-sm booking-card">
+                  <div className="card-header booking-card-header">
+                    <h5 className="mb-0">3. Elige la hora</h5>
+                  </div>
+                  <div className="card-body d-flex flex-column">
+                    {loadingHoras ? (
+                      <div className="text-center py-4 flex-grow-1"><div className="spinner-border spinner-border-sm text-primary"></div><p className="small mt-2 mb-0">Cargando horarios...</p></div>
+                    ) : horasDisponibles.length === 0 ? (
+                      <div className="text-center py-4 flex-grow-1 d-flex align-items-center justify-content-center">
+                        <p className="text-muted mb-0">No hay horarios disponibles para esta fecha. Prueba otro día.</p>
+                      </div>
+                    ) : (
+                      <div className="hora-grid flex-grow-1">
+                        {horasDisponibles.map(h => (
+                          <button
+                            key={h}
+                            type="button"
+                            className={`hora-btn${hora === h ? ' selected' : ''}`}
+                            onClick={() => setHora(h)}
+                          >
+                            {h}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+            </div>
+
+            {/* PASO 4: DATOS PACIENTE */}
+            <div className="card shadow-sm booking-card">
+              <div className="card-header booking-card-header">
+                <h5 className="mb-0">4. Tus datos</h5>
+              </div>
+              <div className="card-body">
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Nombre completo *</label>
+                    <input
+                      type="text"
+                      className={`form-control ${formErrors.nombrePaciente ? 'is-invalid' : ''}`}
+                      value={form.nombrePaciente}
+                      onChange={e => setForm({...form, nombrePaciente: e.target.value})}
+                      placeholder="Tu nombre"
+                    />
+                    {formErrors.nombrePaciente && <div className="invalid-feedback">{formErrors.nombrePaciente}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Email *</label>
+                    <input
+                      type="email"
+                      className={`form-control ${formErrors.emailPaciente ? 'is-invalid' : ''}`}
+                      value={form.emailPaciente}
+                      onChange={e => setForm({...form, emailPaciente: e.target.value})}
+                      placeholder="tu@email.cl"
+                    />
+                    {formErrors.emailPaciente && <div className="invalid-feedback">{formErrors.emailPaciente}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Teléfono *</label>
+                    <input
+                      type="tel"
+                      className={`form-control ${formErrors.telefonoPaciente ? 'is-invalid' : ''}`}
+                      value={form.telefonoPaciente}
+                      onChange={e => setForm({...form, telefonoPaciente: e.target.value})}
+                      placeholder="+56 9 1234 5678"
+                    />
+                    {formErrors.telefonoPaciente && <div className="invalid-feedback">{formErrors.telefonoPaciente}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Motivo de consulta</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={form.motivo}
+                      onChange={e => setForm({...form, motivo: e.target.value})}
+                      placeholder="Opcional"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* RESUMEN */}
+          <div className="col-lg-4">
+            <div className="summary-card shadow-sm">
+              <h5 className="summary-title">Resumen de tu reserva</h5>
+              <div className="summary-row">
+                <span>Profesional</span>
+                <strong>{profesional?.nombre}</strong>
+              </div>
+              <div className="summary-row">
+                <span>Sesión</span>
+                <strong className={sesionSeleccionada ? '' : 'text-muted'}>{sesionSeleccionada ? sesionSeleccionada.label : 'Sin elegir'}</strong>
+              </div>
+              <div className="summary-row">
+                <span>Fecha</span>
+                <strong>{fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'short'}) : '—'}</strong>
+              </div>
+              <div className="summary-row">
+                <span>Hora</span>
+                <strong className={hora ? '' : 'text-muted'}>{hora || 'Sin elegir'}</strong>
+              </div>
+              <hr />
+              <div className="summary-row summary-total">
+                <span>Total</span>
+                <strong>{sesionSeleccionada ? formatCLP(sesionSeleccionada.price) : '—'}</strong>
+              </div>
+              <button
+                type="submit"
+                className="btn w-100 text-white fw-bold mt-3"
+                style={{backgroundColor:'#4a6fa5'}}
+                disabled={enviando || !hora || !sesionSeleccionada}
+              >
+                {enviando ? 'Reservando...' : 'Confirmar Reserva'}
+              </button>
+              {(!sesionSeleccionada || !hora) && (
+                <p className="summary-hint">Elige tu sesión y un horario para poder confirmar</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
   );
-}
+};
+
+export default ProfessionalDetail;

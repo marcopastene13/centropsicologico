@@ -6,19 +6,22 @@
 
 .jumbotron-section {
   position: relative;
-  height: 400px;
+  min-height: 400px;
   overflow: hidden;
   border-radius: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f5f7fa;
+  padding: 3rem 1.5rem;
 }
 
 .jumbotron-background {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-image: url("/logo192.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -32,10 +35,19 @@
   z-index: 2;
   color: #52796f;
   padding: 0 2rem;
+  max-width: 720px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.jumbotron-lead {
+  font-size: 1.05rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #52616b;
 }
 
 .jumbotron-title {
-  font-family: "Nunito", sans-serif;
   font-weight: 700;
   font-size: 3rem;
   margin-bottom: 0.5rem;
@@ -43,7 +55,6 @@
 }
 
 .jumbotron-subtitle {
-  font-family: "Merriweather", serif;
   font-size: 1.4rem;
   font-style: italic;
   margin-bottom: 2rem;
@@ -67,15 +78,17 @@
 /* Profesionales */
 
 .custom-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 18px;
   box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
   border: none;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
 .custom-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(160, 180, 170, 0.18);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
 }
 
 
@@ -115,21 +128,21 @@
   margin-bottom: 1.5rem;
 }
 
-.about-news-section .row.align-items-stretch {
-  height: 200px; /* Define la altura deseada, ajusta a tu gusto */
-}
-
-.about-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 .news-card {
   height: 100%;
 }
 
 /*proffesional card */
+
+.professional-detail-container h6 {
+  font-weight: 600;
+  color: #52796f;
+}
+
+.professional-detail-container .react-calendar {
+  border-radius: 12px;
+  border: 1px solid #e0e4e0;
+}
 
 .professional-card {
   background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
@@ -199,28 +212,577 @@
   color: white;
 }
 
-/* Cards de artículos más compactas */
-.article-card {
+.service-modality-card {
   border-radius: 14px;
+  border: 2px solid #e0e4e0;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-.article-card .card-body {
-  padding: 0.9rem 1rem;
+.service-modality-card.selected-modality {
+  border-color: #84a98c;
+  box-shadow: 0 4px 12px rgba(132, 169, 140, 0.2);
 }
 
-.article-card .card-title {
-  font-size: 0.98rem;
-  line-height: 1.2;
-  margin-bottom: 0.4rem;
+.service-modality-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
-.article-card .card-text {
-  font-size: 0.9rem;
-  color: #6c757d;
-  margin-bottom: 0.6rem;
+.service-modality-card:hover {
+  box-shadow: 0 4px 12px rgba(132, 169, 140, 0.15);
+  border-color: #84a98c;
 }
 
-.article-card .btn {
-  padding: 0.3rem 0.6rem;
+.pack-offer-card {
+  background: linear-gradient(135deg, #f7f9f8 0%, #f0f4f2 100%);
+  border-color: #84a98c !important;
+  border-width: 2px;
+}
+
+.pack-offer-card:hover {
+  box-shadow: 0 6px 16px rgba(132, 169, 140, 0.2);
+}
+
+
+/* Cards de artículos más compactas */
+/* Reemplaza la sección de about-testimonials-section en tu MainPage.css */
+
+/* Sección About y Testimonios - Dos cards */
+.about-testimonials-section {
+  padding: 60px 0;
+  background: #f8faf8;
+}
+
+/* Cards generales - Estilo igual a professional-card */
+.about-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  padding: 40px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-card:hover {
+    transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
+  }
+
+
+.card-title-custom {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #52796f;
+  margin-bottom: 1rem;
+}
+
+.card-text-custom {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #6b7c6a;
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+/* Botón en about-card */
+.about-card .btn {
+  border-radius: 20px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+  margin-top: auto;
+}
+
+.about-card .btn-success {
+  background-color: #84a98c;
+  border: none;
+}
+
+.about-card .btn-success:hover {
+  background-color: #52796f;
+}
+
+/* Cards de testimonios */
+.testimonial-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  border-left: 4px solid #6aa889;
+  padding: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  }
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
+  border-left-color: #5a9374;
+  }
+
+/* Testimonios dentro de card */
+.testimonial-content-card {
+  padding: 20px;
+  background: #f7f9f8;
+  border-radius: 12px;
+  border-left: 4px solid #84a98c;
+  margin-bottom: 1rem;
+}
+
+.rating-stars-card {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-stars-card .star {
+  font-size: 16px;
+  color: #ddd;
+}
+
+.rating-stars-card .star.filled {
+  color: #ffc107;
+}
+
+.testimonial-text-card {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #52616b;
+  font-style: italic;
+  margin: 15px 0;
+}
+
+.testimonial-author-card {
+  display: flex;
+  align-items: center;
   font-size: 0.85rem;
+  color: #6b7c6a;
+}
+
+.testimonial-author-card .author-name {
+  font-weight: 600;
+  color: #52796f;
+}
+
+.facebook-link {
+  color: #1877f2;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.facebook-link:hover {
+  text-decoration: underline;
+  color: #0c5dbf;
+}
+
+.view-more-link {
+  color: #84a98c;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.3s;
+}
+
+.view-more-link:hover {
+  color: #52796f;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .about-testimonials-section {
+    padding: 40px 0;
+  }
+  
+  .card-title-custom {
+    font-size: 1.3rem;
+  }
+  
+  .card-text-custom {
+    font-size: 0.95rem;
+  }
+  
+  .testimonial-content-card {
+    padding: 15px;
+  }
+}
+
+
+
+.services-section {
+  margin-top: 3rem;
+}
+
+.service-card {
+  height: 100%;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18);
+  }
+
+.service-card .card-title {
+  font-weight: 600;
+  color: #52796f;
+}
+
+.service-card .card-text {
+  color: #6b7c6a;
+}
+
+.service-card .btn {
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.hero-secondary-btn {
+  padding: 12px 32px;
+  border-radius: 24px;
+  border-width: 2px;
+  font-weight: 500;
+  border-color: #84a98c !important;
+  /* verde que ya usas */
+  color: #84a98c !important;
+  background-color: transparent;
+}
+
+.hero-secondary-btn:hover,
+.hero-secondary-btn:focus {
+  border-color: #52796f !important;
+  /* un verde más oscuro para hover */
+  color: white !important;
+  background-color: transparent;
+}
+
+.hero-btn {
+  border-radius: 24px;
+  padding: 12px 32px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  min-width: 220px;
+  /* mismo ancho mínimo para los dos */
+}
+
+
+
+/* Primario (relleno) ya se apoya en .cta-button */
+.cta-button {
+  color: #ffffff;
+  box-shadow: 0 5px 15px rgba(132, 169, 140, 0.4);
+  border: none;
+}
+
+/* Secundario (outline) pero con misma forma */
+.hero-secondary-btn {
+  border-width: 2px;
+  border-color: #84a98c;
+  color: #84a98c;
+  background-color: transparent;
+}
+
+.hero-secondary-btn:hover,
+.hero-secondary-btn:focus {
+  border-color: #52796f;
+  color: #52796f;
+  background-color: transparent;
+}
+
+/* Cards de "¿Por qué elegirnos?" */
+.why-choose-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(160, 180, 170, 0.12);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 30px;
+  text-align: center;
+  height: 100%;
+}
+
+.why-choose-card:hover {
+    transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(160, 180, 170, 0.18)(160, 180, 170, 0.18);
+}
+/*contact*/
+
+/* La fila debe estirar columnas */
+.contact-row {
+  align-items: stretch;
+}
+
+/* Hacer que ambas columnas se estiren iguales */
+.contact-col-left,
+.contact-col-right {
+  display: flex;
+}
+
+/* Dentro de cada columna, el contenido ocupa todo el alto */
+.contact-col-left {
+  flex-direction: column;
+}
+
+/* Card del formulario ocupa todo el alto de la col derecha */
+.contact-col-right .custom-card {
+  flex-grow: 1;
+}
+
+/* En la izquierda, las cards de info conservan su tamaño
+   y la última (WhatsApp) se estira para completar la altura */
+.contact-col-left .custom-card {
+  flex-shrink: 0;
+}
+
+.contact-whatsapp-card {
+  flex-grow: 1;
+  /* llena el espacio restante */
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-whatsapp-card .card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-col-right .custom-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-col-right .card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ========================================
+   PANEL DE AGENDAMIENTO - COMPACTO Y ALINEADO
+   Diseño horizontal en PC, vertical en móvil
+   ======================================== */
+
+/* Contenedor principal del panel de agendamiento */
+.booking-panel-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+/* Layout 2x2 para desktop, vertical para móvil */
+@media (min-width: 992) {px
+  .booking-panel-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .booking-section {
+    min-width: auto;
+    flex: none;
+  }
+}
+
+/* Cada sección del panel (calendario, datos, horarios) */
+.booking-section {
+  flex: 1;
+  min-width: 300px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e5e5;
+}
+
+/* Títulos de las secciones */
+.booking-section h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d5444;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Calendario compacto */
+.react-calendar {
+  width: 100% !important;
+  border: none !important;
+  font-family: inherit !important;
+}
+
+.react-calendar__tile {
+  padding: 10px 5px !important;
+  font-size: 0.9rem !important;
+  border-radius: 8px !important;
+}
+
+.react-calendar__tile:hover {
+  background: #e8f5f0 !important;
+}
+
+.react-calendar__tile--active {
+  background: #6aa889 !important;
+  color: white !important;
+}
+
+/* Formulario de datos compacto */
+.client-data-form .form-group {
+  margin-bottom: 15px;
+}
+
+.client-data-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d5444;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.client-data-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s;
+}
+
+.client-data-form input:focus {
+  outline: none;
+  border-color: #6aa889;
+  box-shadow: 0 0 0 3px rgba(106, 168, 137, 0.1);
+}
+
+/* Horarios compactos */
+.time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.time-slot-button {
+  padding: 10px;
+  border: 2px solid #e5e5e5;
+  background: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5a6c64;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.time-slot-button:hover {
+  border-color: #6aa889;
+  background: #f0f8f5;
+  transform: translateY(-2px);
+}
+
+.time-slot-button.selected {
+  background: #6aa889;
+  border-color: #6aa889;
+  color: white;
+}
+
+/* Card de resumen más compacta */
+.booking-summary {
+  background: linear-gradient(135deg, #6aa889 0%, #5a9374 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.booking-summary h5 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: white;
+}
+
+.booking-summary .summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.booking-summary .summary-item:last-child {
+  border-bottom: none;
+}
+
+.booking-summary .summary-label {
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.booking-summary .summary-value {
+  font-weight: 500;
+}
+
+/* Botón de confirmación compacto pero llamativo */
+.btn-confirm-whatsapp {
+  width: 100%;
+  background: linear-gradient(135deg, #25d366 0%, #20ba5a 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 15px 30px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.btn-confirm-whatsapp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+/* Responsive - En móviles apilamos verticalmente */
+@media (max-width: 992px) {
+  .booking-panel-row {
+    flex-direction: column;
+  }
+  
+  .booking-section {
+    min-width: 100%;
+  }
+  
+  .time-slots-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .booking-section {
+    padding: 15px;
+  }
+  
+  .booking-section h5 {
+    font-size: 1rem;
+  }
+  
+  .btn-confirm-whatsapp {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
 }
