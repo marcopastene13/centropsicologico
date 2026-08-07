@@ -4,7 +4,7 @@ import { fetchProfesionalById, fetchHorariosDisponibles, crearReserva } from '..
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/ProfessionalDetail.css';
-import { allServices } from '../data/services';
+import { getPricingFor, formatCLP } from '../data/pricing';
 
 const hoy = () => {
   const d = new Date();
@@ -26,7 +26,7 @@ const ProfessionalDetail = () => {
   // Paso 2: hora
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [loadingHoras, setLoadingHoras] = useState(false);
-  const [servicio, setServicio] = useState('');
+  const [sesionId, setSesionId] = useState('');
   const [hora, setHora] = useState('');
   // Paso 3: datos paciente
   const [form, setForm] = useState({
@@ -70,12 +70,13 @@ const ProfessionalDetail = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!servicio) { toast.error('Debes seleccionar un servicio'); return; }
+    if (!sesionSeleccionada) { toast.error('Debes seleccionar el tipo de sesión'); return; }
     if (!hora) { toast.error('Debes seleccionar una hora'); return; }
     const errors = validateForm();
     if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
     setFormErrors({});
     setEnviando(true);
+    const servicio = `${sesionSeleccionada.label} (${formatCLP(sesionSeleccionada.price)})`;
     try {
       const resultado = await crearReserva({
         profesionalId: id, fecha, hora, servicio, ...form
@@ -93,6 +94,9 @@ const ProfessionalDetail = () => {
   if (error) return <div className="container py-5 text-center"><p className="text-danger">{error}</p><button className="btn btn-primary" onClick={() => navigate('/profesionales')}>Volver</button></div>;
   if (!profesional) return null;
 
+  const pricing = getPricingFor(profesional?.nombre);
+  const sesionSeleccionada = pricing?.find(p => p.id === sesionId) || null;
+
   if (reservaExitosa) {
     return (
       <div className="container py-5">
@@ -103,6 +107,7 @@ const ProfessionalDetail = () => {
                 <div className="mb-3" style={{fontSize:'4rem'}}>&#10003;</div>
                 <h3 className="text-success mb-3">Reserva Confirmada</h3>
                 <p className="mb-1"><strong>Profesional:</strong> {reservaExitosa.reserva?.profesional}</p>
+                <p className="mb-1"><strong>Sesión:</strong> {sesionSeleccionada?.label} — {sesionSeleccionada && formatCLP(sesionSeleccionada.price)}</p>
                 <p className="mb-1"><strong>Fecha:</strong> {fecha}</p>
                 <p className="mb-1"><strong>Hora:</strong> {hora}</p>
                 <p className="text-muted mt-3">Recibirás una notificación de confirmación.</p>
@@ -131,194 +136,242 @@ const ProfessionalDetail = () => {
         </div>
       </div>
 
+      {/* Barra de progreso */}
+      <div className="progress-steps mb-4">
+        {[
+          { n: 1, label: 'Sesión', done: !!sesionSeleccionada },
+          { n: 2, label: 'Fecha', done: !!fecha },
+          { n: 3, label: 'Hora', done: !!hora },
+          { n: 4, label: 'Tus datos', done: !!(form.nombrePaciente && form.emailPaciente && form.telefonoPaciente) },
+        ].map((step, idx, arr) => (
+          <React.Fragment key={step.n}>
+            <div className={`step-node${step.done ? ' done' : ''}`}>
+              <span className="step-circle">{step.done ? '✓' : step.n}</span>
+              <span className="step-label">{step.label}</span>
+            </div>
+            {idx < arr.length - 1 && <span className={`step-line${step.done ? ' done' : ''}`} />}
+          </React.Fragment>
+        ))}
+      </div>
+
       <form onSubmit={handleSubmit}>
-        {/* 4 CARDS HORIZONTALES */}
         <div className="row g-4">
+          <div className="col-lg-8">
 
-          {/* CARD 0: SERVICIO */}
-              <div className="col-12 col-sm-6 col-xl-3">
-                <div className="card h-100 shadow-sm">
-                  <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
-                    <h5 className="mb-0">1. Selecciona el Servicio</h5>
-                  </div>
-                  <div className="card-body d-flex flex-column p-2">
-                    <div className="servicio-list flex-grow-1">
-                      {allServices.map(s => (
-                        <button
-                          key={s.id}
-                          type="button"
-                          className={'btn btn-sm w-100 mb-2 text-start ' + (servicio === s.title ? 'btn-primary active' : 'btn-outline-secondary')}
-                          onClick={() => setServicio(s.title)}
-                        >
-                          <span className="me-2">{s.icon}</span>
-                          {s.title}
-                        </button>
-                      ))}
-                    </div>
-                    {servicio && (
-                      <p className="cal-selected mt-2 mb-0">
-                        <strong>{servicio}</strong>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* CARD 1: FECHA */}
-          <div className="col-12 col-sm-6 col-xl-3">
-            <div className="card h-100 shadow-sm">
-              <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
-                <h5 className="mb-0">2. Selecciona la Fecha</h5>
-              </div>
-              <div className="card-body fecha-card-body p-2">
-            {/* Navegación mes/año */}
-            <div className="cal-nav">
-              <button type="button" className="cal-nav-btn" onClick={() => {
-                const d = new Date(calYear, calMonth - 1, 1);
-                d.setMonth(d.getMonth() - 1);
-                setCalMonth(d.getMonth() + 1);
-                setCalYear(d.getFullYear());
-              }}>&#8249;</button>
-              <span className="cal-title">
-                {new Date(calYear, calMonth - 1).toLocaleString('es-CL', {month:'long', year:'numeric'})}
-              </span>
-              <button type="button" className="cal-nav-btn" onClick={() => {
-                const d = new Date(calYear, calMonth - 1, 1);
-                d.setMonth(d.getMonth() + 1);
-                setCalMonth(d.getMonth() + 1);
-                setCalYear(d.getFullYear());
-              }}>&#8250;</button>
-            </div>
-            {/* Días de la semana */}
-                                        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px',marginBottom:'3px'}}>
-              {['Lu','Ma','Mi','Ju','Vi','Sá','Do'].map(d => (
-                <div key={d} className="cal-dow">{d}</div>
-              ))}
-            </div>
-            <div className="cal-grid">
-              {(() => {
-                const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
-                const offset = firstDay === 0 ? 6 : firstDay - 1;
-                const daysInMonth = new Date(calYear, calMonth, 0).getDate();
-                const cells = [];
-                for (let i = 0; i < offset; i++) cells.push(<div key={'e'+i} />);
-                for (let d = 1; d <= daysInMonth; d++) {
-                  const dateStr = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                  const todayStr = hoy();
-                  const isPast = dateStr < todayStr;
-                  const isSelected = fecha === dateStr;
-                  cells.push(
-                    <button
-                      key={d}
-                      type="button"
-                      className={`cal-day${isSelected ? ' selected' : ''}${isPast ? ' past' : ''}`}
-                      onClick={() => !isPast && setFecha(dateStr)}
-                      disabled={isPast}
-                    >{d}</button>
-                  );
-                }
-                return cells;
-              })()}
-            </div>
-            {fecha && <p className="cal-selected">Fecha: <strong>{new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}</strong></p>}
-          </div>
-            </div>
-          </div>
-
-          {/* CARD 2: HORA */}
-          <div className="col-12 col-sm-6 col-xl-3">
-            <div className="card h-100 shadow-sm">
-              <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
-                <h5 className="mb-0">3. Selecciona la Hora</h5>
+            {/* PASO 1: SESION */}
+            <div className="card shadow-sm booking-card mb-4">
+              <div className="card-header booking-card-header">
+                <h5 className="mb-0">1. Elige tu sesión</h5>
               </div>
               <div className="card-body">
-                {loadingHoras ? (
-                  <div className="text-center py-3"><div className="spinner-border spinner-border-sm text-primary"></div><p className="small mt-2">Cargando horarios...</p></div>
-                ) : horasDisponibles.length === 0 ? (
-                  <p className="text-center text-muted py-3">No hay horarios disponibles para esta fecha.</p>
-                ) : (
-                  <div className="row g-2">
-                    {horasDisponibles.map(h => (
-                      <div className="col-6" key={h}>
+                {pricing && pricing.length > 0 ? (
+                  <div className="row g-3">
+                    {pricing.map(item => (
+                      <div className="col-6 col-md-3" key={item.id}>
                         <button
                           type="button"
-                          className={`btn w-100 ${hora === h ? 'btn-primary' : 'btn-outline-primary'}`}
-                          onClick={() => setHora(h)}
+                          className={`session-card w-100 h-100${sesionId === item.id ? ' selected' : ''}`}
+                          onClick={() => setSesionId(item.id)}
                         >
-                          {h}
+                          {sesionId === item.id && <span className="session-check">✓</span>}
+                          <span className="session-label">{item.label}</span>
+                          <span className="session-price">{formatCLP(item.price)}</span>
+                          {item.note && <span className="session-note">{item.note}</span>}
                         </button>
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <p className="text-muted mb-0">Aún no hay valores cargados para este profesional. Contáctanos para más información.</p>
                 )}
-                {hora && <p className="text-success small mt-2 mb-0">Hora seleccionada: <strong>{hora}</strong></p>}
               </div>
             </div>
-          </div>
 
-          {/* CARD 3: DATOS PACIENTE */}
-          <div className="col-12 col-sm-6 col-xl-3">
-            <div className="card h-100 shadow-sm">
-              <div className="card-header text-white text-center" style={{backgroundColor:'#4a6fa5'}}>
-                <h5 className="mb-0">3. Tus Datos</h5>
+            {/* PASO 2 y 3: FECHA + HORA */}
+            <div className="row g-4 mb-4">
+              <div className="col-md-6">
+                <div className="card h-100 shadow-sm booking-card">
+                  <div className="card-header booking-card-header">
+                    <h5 className="mb-0">2. Elige la fecha</h5>
+                  </div>
+                  <div className="card-body fecha-card-body p-2">
+                    <div className="cal-nav">
+                      <button type="button" className="cal-nav-btn" onClick={() => {
+                        const d = new Date(calYear, calMonth - 1, 1);
+                        d.setMonth(d.getMonth() - 1);
+                        setCalMonth(d.getMonth() + 1);
+                        setCalYear(d.getFullYear());
+                      }}>&#8249;</button>
+                      <span className="cal-title">
+                        {new Date(calYear, calMonth - 1).toLocaleString('es-CL', {month:'long', year:'numeric'})}
+                      </span>
+                      <button type="button" className="cal-nav-btn" onClick={() => {
+                        const d = new Date(calYear, calMonth - 1, 1);
+                        d.setMonth(d.getMonth() + 1);
+                        setCalMonth(d.getMonth() + 1);
+                        setCalYear(d.getFullYear());
+                      }}>&#8250;</button>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px',marginBottom:'3px'}}>
+                      {['Lu','Ma','Mi','Ju','Vi','Sá','Do'].map(d => (
+                        <div key={d} className="cal-dow">{d}</div>
+                      ))}
+                    </div>
+                    <div className="cal-grid">
+                      {(() => {
+                        const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
+                        const offset = firstDay === 0 ? 6 : firstDay - 1;
+                        const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+                        const cells = [];
+                        for (let i = 0; i < offset; i++) cells.push(<div key={'e'+i} />);
+                        for (let d = 1; d <= daysInMonth; d++) {
+                          const dateStr = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                          const todayStr = hoy();
+                          const isPast = dateStr < todayStr;
+                          const isSelected = fecha === dateStr;
+                          cells.push(
+                            <button
+                              key={d}
+                              type="button"
+                              className={`cal-day${isSelected ? ' selected' : ''}${isPast ? ' past' : ''}`}
+                              onClick={() => !isPast && setFecha(dateStr)}
+                              disabled={isPast}
+                            >{d}</button>
+                          );
+                        }
+                        return cells;
+                      })()}
+                    </div>
+                    {fecha && <p className="cal-selected">Fecha: <strong>{new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}</strong></p>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-md-6">
+                <div className="card h-100 shadow-sm booking-card">
+                  <div className="card-header booking-card-header">
+                    <h5 className="mb-0">3. Elige la hora</h5>
+                  </div>
+                  <div className="card-body d-flex flex-column">
+                    {loadingHoras ? (
+                      <div className="text-center py-4 flex-grow-1"><div className="spinner-border spinner-border-sm text-primary"></div><p className="small mt-2 mb-0">Cargando horarios...</p></div>
+                    ) : horasDisponibles.length === 0 ? (
+                      <div className="text-center py-4 flex-grow-1 d-flex align-items-center justify-content-center">
+                        <p className="text-muted mb-0">No hay horarios disponibles para esta fecha. Prueba otro día.</p>
+                      </div>
+                    ) : (
+                      <div className="hora-grid flex-grow-1">
+                        {horasDisponibles.map(h => (
+                          <button
+                            key={h}
+                            type="button"
+                            className={`hora-btn${hora === h ? ' selected' : ''}`}
+                            onClick={() => setHora(h)}
+                          >
+                            {h}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* PASO 4: DATOS PACIENTE */}
+            <div className="card shadow-sm booking-card">
+              <div className="card-header booking-card-header">
+                <h5 className="mb-0">4. Tus datos</h5>
               </div>
               <div className="card-body">
-                <div className="mb-3">
-                  <label className="form-label">Nombre completo *</label>
-                  <input
-                    type="text"
-                    className={`form-control ${formErrors.nombrePaciente ? 'is-invalid' : ''}`}
-                    value={form.nombrePaciente}
-                    onChange={e => setForm({...form, nombrePaciente: e.target.value})}
-                    placeholder="Tu nombre"
-                  />
-                  {formErrors.nombrePaciente && <div className="invalid-feedback">{formErrors.nombrePaciente}</div>}
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Nombre completo *</label>
+                    <input
+                      type="text"
+                      className={`form-control ${formErrors.nombrePaciente ? 'is-invalid' : ''}`}
+                      value={form.nombrePaciente}
+                      onChange={e => setForm({...form, nombrePaciente: e.target.value})}
+                      placeholder="Tu nombre"
+                    />
+                    {formErrors.nombrePaciente && <div className="invalid-feedback">{formErrors.nombrePaciente}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Email *</label>
+                    <input
+                      type="email"
+                      className={`form-control ${formErrors.emailPaciente ? 'is-invalid' : ''}`}
+                      value={form.emailPaciente}
+                      onChange={e => setForm({...form, emailPaciente: e.target.value})}
+                      placeholder="tu@email.cl"
+                    />
+                    {formErrors.emailPaciente && <div className="invalid-feedback">{formErrors.emailPaciente}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Teléfono *</label>
+                    <input
+                      type="tel"
+                      className={`form-control ${formErrors.telefonoPaciente ? 'is-invalid' : ''}`}
+                      value={form.telefonoPaciente}
+                      onChange={e => setForm({...form, telefonoPaciente: e.target.value})}
+                      placeholder="+56 9 1234 5678"
+                    />
+                    {formErrors.telefonoPaciente && <div className="invalid-feedback">{formErrors.telefonoPaciente}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Motivo de consulta</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={form.motivo}
+                      onChange={e => setForm({...form, motivo: e.target.value})}
+                      placeholder="Opcional"
+                    />
+                  </div>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label">Email *</label>
-                  <input
-                    type="email"
-                    className={`form-control ${formErrors.emailPaciente ? 'is-invalid' : ''}`}
-                    value={form.emailPaciente}
-                    onChange={e => setForm({...form, emailPaciente: e.target.value})}
-                    placeholder="tu@email.cl"
-                  />
-                  {formErrors.emailPaciente && <div className="invalid-feedback">{formErrors.emailPaciente}</div>}
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Telefono *</label>
-                  <input
-                    type="tel"
-                    className={`form-control ${formErrors.telefonoPaciente ? 'is-invalid' : ''}`}
-                    value={form.telefonoPaciente}
-                    onChange={e => setForm({...form, telefonoPaciente: e.target.value})}
-                    placeholder="+56 9 1234 5678"
-                  />
-                  {formErrors.telefonoPaciente && <div className="invalid-feedback">{formErrors.telefonoPaciente}</div>}
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Motivo de consulta</label>
-                  <textarea
-                    className="form-control"
-                    rows="2"
-                    value={form.motivo}
-                    onChange={e => setForm({...form, motivo: e.target.value})}
-                    placeholder="Describe brevemente tu consulta..."
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="btn w-100 text-white fw-bold"
-                  style={{backgroundColor:'#4a6fa5'}}
-                  disabled={enviando || !hora}
-                >
-                  {enviando ? 'Reservando...' : 'Confirmar Reserva'}
-                </button>
               </div>
             </div>
           </div>
 
-        </div>{/* fin row */}
+          {/* RESUMEN */}
+          <div className="col-lg-4">
+            <div className="summary-card shadow-sm">
+              <h5 className="summary-title">Resumen de tu reserva</h5>
+              <div className="summary-row">
+                <span>Profesional</span>
+                <strong>{profesional?.nombre}</strong>
+              </div>
+              <div className="summary-row">
+                <span>Sesión</span>
+                <strong className={sesionSeleccionada ? '' : 'text-muted'}>{sesionSeleccionada ? sesionSeleccionada.label : 'Sin elegir'}</strong>
+              </div>
+              <div className="summary-row">
+                <span>Fecha</span>
+                <strong>{fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'short'}) : '—'}</strong>
+              </div>
+              <div className="summary-row">
+                <span>Hora</span>
+                <strong className={hora ? '' : 'text-muted'}>{hora || 'Sin elegir'}</strong>
+              </div>
+              <hr />
+              <div className="summary-row summary-total">
+                <span>Total</span>
+                <strong>{sesionSeleccionada ? formatCLP(sesionSeleccionada.price) : '—'}</strong>
+              </div>
+              <button
+                type="submit"
+                className="btn w-100 text-white fw-bold mt-3"
+                style={{backgroundColor:'#4a6fa5'}}
+                disabled={enviando || !hora || !sesionSeleccionada}
+              >
+                {enviando ? 'Reservando...' : 'Confirmar Reserva'}
+              </button>
+              {(!sesionSeleccionada || !hora) && (
+                <p className="summary-hint">Elige tu sesión y un horario para poder confirmar</p>
+              )}
+            </div>
+          </div>
+        </div>
       </form>
     </div>
   );

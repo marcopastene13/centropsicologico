@@ -147,6 +147,7 @@ const AdminEditPanel = ({ token, onLogout }) => {
                 <th>Paciente</th>
                 <th>Contacto</th>
                 <th>Profesional</th>
+                <th>Sesión</th>
                 <th>Motivo</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -164,6 +165,7 @@ const AdminEditPanel = ({ token, onLogout }) => {
                     <small className="text-muted">{r.telefonoPaciente}</small>
                   </td>
                   <td>{r.Profesional?.nombre || '-'}<br/><small className="text-muted">{r.Profesional?.especialidad}</small></td>
+                  <td><small>{r.servicio || '-'}</small></td>
                   <td><small>{r.motivo || '-'}</small></td>
                   <td>
                     <span className={`badge bg-${ESTADO_COLORS[r.estado] || 'secondary'}`}>

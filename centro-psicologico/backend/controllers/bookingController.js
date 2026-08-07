@@ -40,7 +40,7 @@ const getAvailableSlots = async (req, res) => {
 
 const createBooking = async (req, res) => {
   try {
-    const { profesionalId, fecha, hora, nombrePaciente, emailPaciente, telefonoPaciente, motivo } = req.body;
+    const { profesionalId, fecha, hora, nombrePaciente, emailPaciente, telefonoPaciente, motivo, servicio } = req.body;
     if (!profesionalId || !fecha || !hora || !nombrePaciente || !emailPaciente || !telefonoPaciente) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
@@ -70,6 +70,7 @@ const createBooking = async (req, res) => {
       pacienteEmail: emailPaciente,
       pacienteTelefono: telefonoPaciente,
       motivo: motivo || '',
+      servicio: servicio || '',
       estado: 'pendiente'
     });
     // Notificaciones WhatsApp (no bloqueante)
