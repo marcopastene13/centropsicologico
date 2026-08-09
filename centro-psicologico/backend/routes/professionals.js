@@ -12,5 +12,7 @@ router.get('/:id/availability', professionalController.getAvailability);
 router.post('/', auth, professionalController.createProfessional);
 router.put('/:id', auth, professionalController.updateProfessional);
 router.delete('/:id', auth, professionalController.deleteProfessional);
+router.get('/:id/schedule', auth, professionalController.getSchedule);
+router.put('/:id/schedule', auth, professionalController.updateSchedule);
 
 module.exports = router;

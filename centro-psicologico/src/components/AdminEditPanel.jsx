@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchReservas, actualizarEstadoReserva, eliminarReserva } from '../services/api';
+import AdminSchedules from './AdminSchedules';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,6 +17,7 @@ const AdminEditPanel = ({ token, onLogout }) => {
   const [filtro, setFiltro] = useState('todas');
   const [busqueda, setBusqueda] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [tab, setTab] = useState('reservas');
 
   const cargarReservas = async () => {
     try {
@@ -61,7 +63,7 @@ const AdminEditPanel = ({ token, onLogout }) => {
     const matchBusqueda = !busqueda ||
       r.nombrePaciente?.toLowerCase().includes(busqueda.toLowerCase()) ||
       r.emailPaciente?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      r.Profesional?.nombre?.toLowerCase().includes(busqueda.toLowerCase());
+      r.profesional?.nombre?.toLowerCase().includes(busqueda.toLowerCase());
     return matchEstado && matchBusqueda;
   });
 
@@ -89,6 +91,24 @@ const AdminEditPanel = ({ token, onLogout }) => {
         </div>
       </div>
 
+      {/* Pestanas */}
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button className={`nav-link ${tab === 'reservas' ? 'active' : ''}`} onClick={() => setTab('reservas')}>
+            Reservas
+          </button>
+        </li>
+        <li className="nav-item">
+          <button className={`nav-link ${tab === 'horarios' ? 'active' : ''}`} onClick={() => setTab('horarios')}>
+            Horarios
+          </button>
+        </li>
+      </ul>
+
+      {tab === 'horarios' ? (
+        <AdminSchedules token={token} />
+      ) : (
+        <>
       {/* Stats cards */}
       <div className="row g-3 mb-4">
         {[{label:'Total Reservas', val:stats.total, color:'primary'},
@@ -164,7 +184,7 @@ const AdminEditPanel = ({ token, onLogout }) => {
                     <small className="d-block">{r.emailPaciente}</small>
                     <small className="text-muted">{r.telefonoPaciente}</small>
                   </td>
-                  <td>{r.Profesional?.nombre || '-'}<br/><small className="text-muted">{r.Profesional?.especialidad}</small></td>
+                  <td>{r.profesional?.nombre || '-'}<br/><small className="text-muted">{r.profesional?.especialidad}</small></td>
                   <td><small>{r.servicio || '-'}</small></td>
                   <td><small>{r.motivo || '-'}</small></td>
                   <td>
@@ -218,6 +238,8 @@ const AdminEditPanel = ({ token, onLogout }) => {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

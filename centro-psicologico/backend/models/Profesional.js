@@ -39,6 +39,23 @@ module.exports = (sequelize, DataTypes) => {
     activo: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
+    },
+    horarioSemanal: {
+      // { lunes: {activo, inicio, fin, pausaInicio, pausaFin}, martes: {...}, ... }
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: null
+    },
+    duracionSesionMin: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 60
+    },
+    fechasBloqueadas: {
+      // [{ fecha: "2026-08-20", motivo: "Vacaciones" }, ...]
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: []
     }
   }, {
     tableName: 'profesionales',

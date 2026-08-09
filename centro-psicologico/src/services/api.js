@@ -90,6 +90,26 @@ export const eliminarReserva = async (id, token) => {
   return data;
 };
 
+export const fetchProfessionalSchedule = async (id, token) => {
+  const res = await fetchWithTimeout(`${API_URL}/professionals/${id}/schedule`, {
+    headers: getHeaders(token)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || data.message || `Error al cargar horario (${res.status})`);
+  return data;
+};
+
+export const updateProfessionalSchedule = async (id, payload, token) => {
+  const res = await fetchWithTimeout(`${API_URL}/professionals/${id}/schedule`, {
+    method: 'PUT',
+    headers: getHeaders(token),
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || data.message || `Error al guardar horario (${res.status})`);
+  return data;
+};
+
 // CONTACTO
 export const enviarContacto = async (datos) => {
   const res = await fetchWithTimeout(`${API_URL}/contact`, {

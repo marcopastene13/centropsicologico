@@ -1,7 +1,9 @@
 import { Container, Row, Col } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import "../styles/Footer.css";
 
 export default function Footer() {
+  const navigate = useNavigate();
   return (
     <footer className="footer text-muted py-4 mt-5">
       <Container>
@@ -49,7 +51,7 @@ export default function Footer() {
         <hr />
 
         <div className="text-center small">
-          © {new Date().getFullYear()} Centro Psicológico Centenario. Todos los derechos reservados.
+          <span onClick={() => navigate('/login')} style={{ cursor: 'default' }}>©</span> {new Date().getFullYear()} Centro Psicológico Centenario. Todos los derechos reservados.
         </div>
 
         <div className="text-center small mt-2" style={{ opacity: 0.6 }}>

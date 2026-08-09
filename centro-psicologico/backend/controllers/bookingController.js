@@ -1,11 +1,45 @@
 const { Reserva, Profesional } = require('../models');
 const { notifyPatient, notifyProfessional } = require('../utils/whatsappService');
+const { sendBookingEmailToPatient, sendBookingEmailToProfessional } = require('../utils/emailService');
 const { Op } = require('sequelize');
 
-const HORAS_DISPONIBLES = [
-  '09:00', '10:00', '11:00', '12:00',
-  '14:00', '15:00', '16:00', '17:00', '18:00'
-];
+const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+
+const toMinutos = (hhmm) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+};
+const toHHMM = (min) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+
+// Genera los horarios de un dia especifico segun la config de ese profesional
+const generarSlotsDelDia = (horarioDia, duracionMin) => {
+  if (!horarioDia || !horarioDia.activo || !horarioDia.inicio || !horarioDia.fin) return [];
+  const slots = [];
+  const inicio = toMinutos(horarioDia.inicio);
+  const fin = toMinutos(horarioDia.fin);
+  const pausaInicio = horarioDia.pausaInicio ? toMinutos(horarioDia.pausaInicio) : null;
+  const pausaFin = horarioDia.pausaFin ? toMinutos(horarioDia.pausaFin) : null;
+  let cursor = inicio;
+  while (cursor + duracionMin <= fin) {
+    const enPausa = pausaInicio !== null && pausaFin !== null && cursor < pausaFin && (cursor + duracionMin) > pausaInicio;
+    if (!enPausa) slots.push(toHHMM(cursor));
+    cursor += duracionMin;
+  }
+  return slots;
+};
+
+// Devuelve los horarios base (sin filtrar ocupados) de un profesional para una fecha dada.
+// Retorna null si ese dia el profesional no atiende o la fecha esta bloqueada puntualmente.
+const getSlotsBaseParaFecha = (profesional, fecha) => {
+  const bloqueada = (profesional.fechasBloqueadas || []).some(b => b.fecha === fecha);
+  if (bloqueada) return null;
+
+  const diaSemana = DIAS_SEMANA[new Date(fecha + 'T12:00:00').getDay()];
+  const horarioDia = profesional.horarioSemanal ? profesional.horarioSemanal[diaSemana] : null;
+  if (!horarioDia || !horarioDia.activo) return null;
+
+  return generarSlotsDelDia(horarioDia, profesional.duracionSesionMin || 60);
+};
 
 const getAvailableSlots = async (req, res) => {
   try {
@@ -13,22 +47,29 @@ const getAvailableSlots = async (req, res) => {
     if (!profesionalId || !fecha) {
       return res.status(400).json({ message: 'Faltan parametros: profesionalId y fecha' });
     }
-    const reservas = await Reserva.findAll({
-      where: { profesionalId, fecha, estado: { [Op.ne]: 'cancelada' } },
-      attributes: ['hora']
-    });
-    const horasOcupadas = reservas.map(r => r.hora);
-    let horasDisponibles = HORAS_DISPONIBLES.filter(h => !horasOcupadas.includes(h));
+    const profesional = await Profesional.findByPk(profesionalId);
+    if (!profesional) {
+      return res.status(404).json({ message: 'Profesional no encontrado' });
+    }
 
-    // Si la fecha consultada es hoy, sacar las horas que ya pasaron
-    const ahora = new Date();
-    const hoyStr = ahora.toISOString().split('T')[0];
-    if (fecha === hoyStr) {
-      const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
-      horasDisponibles = horasDisponibles.filter(h => {
-        const [hh, mm] = h.split(':').map(Number);
-        return (hh * 60 + mm) > horaActual;
+    const slotsBase = getSlotsBaseParaFecha(profesional, fecha);
+    let horasDisponibles = slotsBase || [];
+
+    if (horasDisponibles.length > 0) {
+      const reservas = await Reserva.findAll({
+        where: { profesionalId, fecha, estado: { [Op.ne]: 'cancelada' } },
+        attributes: ['hora']
       });
+      const horasOcupadas = reservas.map(r => r.hora);
+      horasDisponibles = horasDisponibles.filter(h => !horasOcupadas.includes(h));
+
+      // Si la fecha consultada es hoy, sacar las horas que ya pasaron
+      const ahora = new Date();
+      const hoyStr = ahora.toISOString().split('T')[0];
+      if (fecha === hoyStr) {
+        const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
+        horasDisponibles = horasDisponibles.filter(h => toMinutos(h) > horaActual);
+      }
     }
 
     res.json({ fecha, profesionalId, horasDisponibles });
@@ -44,12 +85,17 @@ const createBooking = async (req, res) => {
     if (!profesionalId || !fecha || !hora || !nombrePaciente || !emailPaciente || !telefonoPaciente) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
-    if (!HORAS_DISPONIBLES.includes(hora)) {
-      return res.status(400).json({ message: 'Hora invalida' });
-    }
     const hoyStr = new Date().toISOString().split('T')[0];
     if (fecha < hoyStr) {
       return res.status(400).json({ message: 'No puedes reservar en una fecha pasada' });
+    }
+    const profesional = await Profesional.findByPk(profesionalId);
+    if (!profesional) {
+      return res.status(404).json({ message: 'Profesional no encontrado' });
+    }
+    const slotsValidos = getSlotsBaseParaFecha(profesional, fecha) || [];
+    if (!slotsValidos.includes(hora)) {
+      return res.status(400).json({ message: 'Ese horario no esta disponible para este profesional' });
     }
     // Verificar disponibilidad
     const existente = await Reserva.findOne({
@@ -57,10 +103,6 @@ const createBooking = async (req, res) => {
     });
     if (existente) {
       return res.status(409).json({ message: 'Ese horario ya esta reservado, elige otro' });
-    }
-    const profesional = await Profesional.findByPk(profesionalId);
-    if (!profesional) {
-      return res.status(404).json({ message: 'Profesional no encontrado' });
     }
     const reserva = await Reserva.create({
       profesionalId,
@@ -73,12 +115,29 @@ const createBooking = async (req, res) => {
       servicio: servicio || '',
       estado: 'pendiente'
     });
-    // Notificaciones WhatsApp (no bloqueante)
+    // Notificaciones (no bloqueantes: si fallan, la reserva ya quedo creada igual)
     try {
-      await notifyPatient({ pacienteNombre: nombrePaciente, pacienteTelefono: telefonoPaciente, fecha, hora, profesional: profesional.nombre });
-      await notifyProfessional({ profesional, fecha, hora, pacienteNombre: nombrePaciente, motivo });
+      await notifyPatient(
+        { nombrePaciente, telefono: telefonoPaciente, fecha, hora },
+        profesional
+      );
+      await notifyProfessional(
+        { nombrePaciente, fecha, hora, motivo },
+        profesional
+      );
     } catch (waErr) {
-      console.warn('WhatsApp no configurado:', waErr.message);
+      console.warn('WhatsApp no configurado o fallo el envio:', waErr.message);
+    }
+    try {
+      await sendBookingEmailToPatient({
+        nombrePaciente, emailPaciente, profesionalNombre: profesional.nombre, fecha, hora, servicio
+      });
+      await sendBookingEmailToProfessional({
+        profesionalNombre: profesional.nombre, profesionalEmail: profesional.email,
+        pacienteNombre: nombrePaciente, pacienteTelefono: telefonoPaciente, fecha, hora, servicio, motivo
+      });
+    } catch (emailErr) {
+      console.warn('Email no configurado o fallo el envio:', emailErr.message);
     }
     res.status(201).json({
       message: 'Reserva creada exitosamente',
@@ -99,7 +158,7 @@ const createBooking = async (req, res) => {
 const getAllBookings = async (req, res) => {
   try {
     const reservas = await Reserva.findAll({
-      include: [{ model: Profesional, attributes: ['nombre', 'especialidad'] }],
+      include: [{ model: Profesional, as: 'profesional', attributes: ['nombre', 'especialidad'] }],
       order: [['fecha', 'DESC'], ['hora', 'ASC']]
     });
     res.json(reservas);

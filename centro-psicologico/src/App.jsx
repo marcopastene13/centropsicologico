@@ -55,7 +55,7 @@ const App = () => {
           path="/admin"
           element={
             <PrivateRoute token={token}>
-              <AdminEditPanel onLogout={handleLogout} />
+              <AdminEditPanel token={token} onLogout={handleLogout} />
             </PrivateRoute>
           }
         />
