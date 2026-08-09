@@ -7,7 +7,6 @@ const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
 const professionalRoutes = require('./routes/professionals');
 const contactRoutes = require('./routes/contact');
-const setupTemporalRoutes = require('./routes/setupTemporal'); // TEMPORAL
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,7 +35,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/professionals', professionalRoutes);
 app.use('/api/contact', contactRoutes);
-app.use('/api/setup', setupTemporalRoutes); // TEMPORAL
 
 // Ruta raiz
 
