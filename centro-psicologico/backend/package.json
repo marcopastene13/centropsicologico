@@ -24,6 +24,7 @@
     "openai": "^6.8.0",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
+    "resend": "^6.18.1",
     "sequelize": "^6.37.8",
     "sqlite3": "^6.0.1",
     "transbank-sdk": "^6.1.0",

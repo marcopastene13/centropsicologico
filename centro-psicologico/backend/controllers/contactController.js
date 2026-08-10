@@ -1,20 +1,7 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 const CENTRO_EMAIL = process.env.CENTRO_EMAIL || 'cconsultapsicologica@gmail.com';
-
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    },
-    family: 4,
-    connectionTimeout: 15000
-  });
-};
+const FROM = 'Centro Psicológico Centenario <onboarding@resend.dev>';
 
 const sendContact = async (req, res) => {
   try {
@@ -38,12 +25,12 @@ const sendContact = async (req, res) => {
     console.log(`[CONTACTO] ${nombre} | ${email} | ${telefono}`);
 
     // Enviar correos si hay config de email
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      const transporter = createTransporter();
+    if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
 
       // --- Email 1: Notificacion al centro ---
-      await transporter.sendMail({
-        from: `"Centro Psicologico Centenario" <${process.env.EMAIL_USER}>`,
+      await resend.emails.send({
+        from: FROM,
         to: CENTRO_EMAIL,
         subject: `Nuevo mensaje de contacto - ${nombre}`,
         html: `
@@ -83,8 +70,8 @@ const sendContact = async (req, res) => {
       });
 
       // --- Email 2: Confirmacion al cliente ---
-      await transporter.sendMail({
-        from: `"Centro Psicologico Centenario" <${process.env.EMAIL_USER}>`,
+      await resend.emails.send({
+        from: FROM,
         to: email,
         subject: 'Hemos recibido tu mensaje - Centro Psicologico Centenario',
         html: `
@@ -115,7 +102,7 @@ const sendContact = async (req, res) => {
 
       console.log(`[CONTACTO] Emails enviados a ${CENTRO_EMAIL} y ${email}`);
     } else {
-      console.warn('[CONTACTO] EMAIL_USER o EMAIL_PASS no configurados. No se enviaron correos.');
+      console.warn('[CONTACTO] RESEND_API_KEY no configurada. No se enviaron correos.');
     }
 
     res.json({ message: 'Mensaje enviado exitosamente. Nos contactaremos a la brevedad.' });

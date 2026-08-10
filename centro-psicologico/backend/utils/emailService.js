@@ -1,27 +1,21 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-let cachedTransporter = null;
+let cachedClient = null;
 
-const isEmailConfigured = () => {
-  return !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
-};
+const isEmailConfigured = () => !!process.env.RESEND_API_KEY;
 
-const getTransporter = () => {
+const getClient = () => {
   if (!isEmailConfigured()) return null;
-  if (cachedTransporter) return cachedTransporter;
-  cachedTransporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    },
-    family: 4,
-    connectionTimeout: 15000
-  });
-  return cachedTransporter;
+  if (cachedClient) return cachedClient;
+  cachedClient = new Resend(process.env.RESEND_API_KEY);
+  return cachedClient;
 };
+
+// Mientras no se verifique un dominio propio en Resend, hay que enviar
+// desde esta direccion (es la que Resend deja usar sin configuracion extra).
+// Una vez que se verifique centropsicologicocentenario.cl en Resend, cambiar
+// esto a algo como "Centro Psicológico Centenario <reservas@centropsicologicocentenario.cl>"
+const FROM = 'Centro Psicológico Centenario <onboarding@resend.dev>';
 
 const wrapper = (title, bodyHtml) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
@@ -45,9 +39,9 @@ const detailRow = (label, value) => `
 `;
 
 const sendBookingEmailToPatient = async ({ nombrePaciente, emailPaciente, profesionalNombre, fecha, hora, servicio }) => {
-  const transporter = getTransporter();
-  if (!transporter) {
-    console.log('[Email] EMAIL_USER/EMAIL_PASS no configurados. Email simulado a', emailPaciente);
+  const client = getClient();
+  if (!client) {
+    console.log('[Email] RESEND_API_KEY no configurada. Email simulado a', emailPaciente);
     return { success: false, simulated: true };
   }
   try {
@@ -62,14 +56,15 @@ const sendBookingEmailToPatient = async ({ nombrePaciente, emailPaciente, profes
       </table>
       <p style="color: #555; margin-top: 20px;">Si necesitas reagendar o cancelar, contáctanos con anticipación.</p>
     `);
-    const info = await transporter.sendMail({
-      from: `"Centro Psicológico Centenario" <${process.env.EMAIL_USER}>`,
+    const { data, error } = await client.emails.send({
+      from: FROM,
       to: emailPaciente,
       subject: 'Reserva Confirmada - Centro Psicológico Centenario',
       html
     });
+    if (error) throw new Error(error.message || JSON.stringify(error));
     console.log('[Email] Confirmacion enviada a paciente:', emailPaciente);
-    return { success: true, info };
+    return { success: true, data };
   } catch (err) {
     console.error('[Email] Error enviando a paciente:', err.message);
     return { success: false, error: err.message };
@@ -77,10 +72,10 @@ const sendBookingEmailToPatient = async ({ nombrePaciente, emailPaciente, profes
 };
 
 const sendBookingEmailToProfessional = async ({ profesionalNombre, profesionalEmail, pacienteNombre, pacienteTelefono, fecha, hora, servicio, motivo }) => {
-  const transporter = getTransporter();
-  if (!transporter || !profesionalEmail) {
+  const client = getClient();
+  if (!client || !profesionalEmail) {
     if (!profesionalEmail) console.log('[Email] Profesional sin email registrado, no se notifica.');
-    else console.log('[Email] EMAIL_USER/EMAIL_PASS no configurados. Email simulado a', profesionalEmail);
+    else console.log('[Email] RESEND_API_KEY no configurada. Email simulado a', profesionalEmail);
     return { success: false, simulated: true };
   }
   try {
@@ -96,14 +91,15 @@ const sendBookingEmailToProfessional = async ({ profesionalNombre, profesionalEm
         ${motivo ? detailRow('Motivo', motivo) : ''}
       </table>
     `);
-    const info = await transporter.sendMail({
-      from: `"Centro Psicológico Centenario" <${process.env.EMAIL_USER}>`,
+    const { data, error } = await client.emails.send({
+      from: FROM,
       to: profesionalEmail,
       subject: `Nueva reserva: ${pacienteNombre} - ${fecha} ${hora}`,
       html
     });
+    if (error) throw new Error(error.message || JSON.stringify(error));
     console.log('[Email] Notificacion enviada a profesional:', profesionalEmail);
-    return { success: true, info };
+    return { success: true, data };
   } catch (err) {
     console.error('[Email] Error enviando a profesional:', err.message);
     return { success: false, error: err.message };

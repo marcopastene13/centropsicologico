@@ -1,5 +1,4 @@
 const { Reserva, Profesional } = require('../models');
-const { notifyPatient, notifyProfessional } = require('../utils/whatsappService');
 const { sendBookingEmailToPatient, sendBookingEmailToProfessional } = require('../utils/emailService');
 const { Op } = require('sequelize');
 
@@ -115,19 +114,7 @@ const createBooking = async (req, res) => {
       servicio: servicio || '',
       estado: 'pendiente'
     });
-    // Notificaciones (no bloqueantes: si fallan, la reserva ya quedo creada igual)
-    try {
-      await notifyPatient(
-        { nombrePaciente, telefono: telefonoPaciente, fecha, hora },
-        profesional
-      );
-      await notifyProfessional(
-        { nombrePaciente, fecha, hora, motivo },
-        profesional
-      );
-    } catch (waErr) {
-      console.warn('WhatsApp no configurado o fallo el envio:', waErr.message);
-    }
+    // Notificaciones por email (no bloqueante: si falla, la reserva ya quedo creada igual)
     try {
       await sendBookingEmailToPatient({
         nombrePaciente, emailPaciente, profesionalNombre: profesional.nombre, fecha, hora, servicio
