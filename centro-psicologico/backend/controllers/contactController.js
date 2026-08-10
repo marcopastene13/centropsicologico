@@ -3,12 +3,16 @@ const nodemailer = require('nodemailer');
 const CENTRO_EMAIL = process.env.CENTRO_EMAIL || 'cconsultapsicologica@gmail.com';
 
 const createTransporter = () => {
-  return nodemailer.createTransporter({
-    service: 'gmail',
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
-    }
+    },
+    family: 4,
+    connectionTimeout: 15000
   });
 };
 
