@@ -147,28 +147,3 @@ exports.updateSchedule = async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar horario' });
   }
 };
-
-// Obtener disponibilidad de un profesional para una fecha
-exports.getAvailability = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { date } = req.query;
-    if (!date) {
-      return res.status(400).json({ error: 'Fecha requerida (date)' });
-    }
-    const profesional = await Profesional.findByPk(id);
-    if (!profesional) {
-      return res.status(404).json({ error: 'Profesional no encontrado' });
-    }
-    const horas = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
-    const reservas = await Reserva.findAll({
-      where: { profesionalId: id, fecha: date }
-    });
-    const ocupadas = reservas.map(r => r.hora);
-    const disponibles = horas.filter(h => !ocupadas.includes(h));
-    res.json({ disponibles, fecha: date });
-  } catch (error) {
-    console.error('Error disponibilidad:', error);
-    res.status(500).json({ error: 'Error al obtener disponibilidad' });
-  }
-};

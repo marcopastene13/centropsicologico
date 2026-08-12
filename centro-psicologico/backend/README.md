@@ -24,30 +24,15 @@ const SECRET_KEY = process.env.JWT_SECRET || 'fallback_secret_CHANGE_THIS';
 
 **Archivos creados:**
 - `config/database.js` - Configuración y pool de conexiones
-- `migrations/001_create_tables.sql` - Script de migración inicial
 
-**Dependencias instaladas:**
-```bash
-npm install pg bcrypt
-```
+Las tablas las crea Sequelize automáticamente al arrancar el servidor
+(`sequelize.sync()` en `index.js`), leyendo los modelos de `models/`.
+No hay que correr ninguna migración SQL a mano para las tablas base.
 
-**Cómo ejecutar las migraciones:**
-
-1. Asegúrate de tener PostgreSQL instalado y corriendo
-2. Crea la base de datos:
-```bash
-psql -U tu_usuario -c "CREATE DATABASE centro_psicologico;"
-```
-
-3. Ejecuta la migración:
-```bash
-psql -U tu_usuario -d centro_psicologico -f migrations/001_create_tables.sql
-```
-
-4. Verifica que las tablas se crearon:
-```bash
-psql -U tu_usuario -d centro_psicologico -c "\dt"
-```
+En producción se usa Neon (PostgreSQL serverless) via la variable
+`DATABASE_URL`. Como el sync corre con `alter: false`, los cambios de
+columnas que se agreguen a futuro a un modelo SI requieren un
+`ALTER TABLE` manual en el SQL editor de Neon (no se generan solos).
 
 ### 📦 3. Modelos Creados
 
