@@ -1,7 +1,7 @@
 const { Resend } = require('resend');
 
 const CENTRO_EMAIL = process.env.CENTRO_EMAIL || 'cconsultapsicologica@gmail.com';
-const FROM = 'Centro Psicológico Centenario <onboarding@resend.dev>';
+const FROM = 'Centro Psicológico Centenario <contacto@centropsicologicocentenario.cl>';
 
 const sendContact = async (req, res) => {
   try {

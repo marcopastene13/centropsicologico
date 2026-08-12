@@ -15,7 +15,7 @@ const getClient = () => {
 // desde esta direccion (es la que Resend deja usar sin configuracion extra).
 // Una vez que se verifique centropsicologicocentenario.cl en Resend, cambiar
 // esto a algo como "Centro Psicológico Centenario <reservas@centropsicologicocentenario.cl>"
-const FROM = 'Centro Psicológico Centenario <onboarding@resend.dev>';
+const FROM = 'Centro Psicológico Centenario <contacto@centropsicologicocentenario.cl>';
 
 const wrapper = (title, bodyHtml) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
