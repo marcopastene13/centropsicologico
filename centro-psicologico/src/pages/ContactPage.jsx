@@ -24,7 +24,7 @@ const ContactPage = () => {
     if (!form.telefono.trim()) {
       errs.telefono = 'El telefono es obligatorio';
         } else if (!/^[+]?[\d\s()-]{7,15}$/.test(form.telefono)) {
-      errs.telefono = 'Telefono invalido (ej: +56 9 1234 5678)';
+      errs.telefono = 'Telefono invalido (ej: +56 9 8643 1293)';
     }
     if (!form.mensaje.trim()) errs.mensaje = 'El mensaje es obligatorio';
     else if (form.mensaje.trim().length < 10) errs.mensaje = 'El mensaje es muy corto';
@@ -78,7 +78,7 @@ const ContactPage = () => {
                   <h5 style={{color:'#4a6fa5'}}>Informacion</h5>
                   <hr/>
                   <p className="mb-2"><strong>Direccion:</strong><br/>Los Libertadores 123, Santiago</p>
-                  <p className="mb-2"><strong>Telefono:</strong><br/>+56 9 1234 5678</p>
+                  <p className="mb-2"><strong>Telefono:</strong><br/>+56 9 8643 1293</p>
                   <p className="mb-2"><strong>Email:</strong><br/>contacto@centropsicologico.cl</p>
                   <p className="mb-2"><strong>Horario:</strong><br/>Lunes a Viernes<br/>9:00 - 18:00 hrs</p>
                   <hr/>
@@ -124,7 +124,7 @@ const ContactPage = () => {
                             className={`form-control ${errors.telefono ? 'is-invalid' : ''}`}
                             value={form.telefono}
                             onChange={handleChange}
-                            placeholder="+56 9 1234 5678"
+                            placeholder="+56 9 8643 1293"
                           />
                           {errors.telefono && <div className="invalid-feedback">{errors.telefono}</div>}
                         </div>

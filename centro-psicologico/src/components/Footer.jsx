@@ -17,7 +17,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             style={{ color: "#6b6b6b", fontWeight: 600 }}>General Ordoñez 155 of.1104, Maipú</a>
             <br />
-              Tel: +56 9 1234 5678<br />
+              Tel: +56 9 86431293<br />
               Email: <a href="mailto:cconsultapsicologica@gmail.com" className="text-muted text-decoration-none">cconsultapsicologica@gmail.com</a>
             </p>
           </Col>

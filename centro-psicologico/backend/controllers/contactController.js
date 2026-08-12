@@ -88,7 +88,7 @@ const sendContact = async (req, res) => {
               </div>
               <p style="color: #555;">Si tienes alguna consulta urgente, puedes contactarnos directamente:</p>
               <ul style="color: #555; padding-left: 20px;">
-                <li>Telefono: +56 9 1234 5678</li>
+                <li>Telefono: +56 9 8643 1293</li>
                 <li>Email: <a href="mailto:cconsultapsicologica@gmail.com" style="color: #4a6fa5;">cconsultapsicologica@gmail.com</a></li>
                 <li>Horario: Lunes a Viernes, 9:00 - 18:00 hrs</li>
               </ul>
