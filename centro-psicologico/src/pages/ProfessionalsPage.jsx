@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-toastify';
 import { getProfessionals } from '../services/api';
 
@@ -67,7 +68,12 @@ const ProfessionalsPage = () => {
 
   return (
     <Container className="py-5">
-      <h1 className="text-center mb-2" style={{ color: '#9271c2' }}>Nuestro Equipo</h1>
+      <Helmet>
+        <title>Nuestros Psicólogos en Maipú | Centro Psicológico Centenario</title>
+        <meta name="description" content="Conoce a nuestro equipo de psicólogas en Maipú: terapia individual, de pareja y online. Revisa la especialidad de cada una y agenda tu hora." />
+        <link rel="canonical" href="https://www.centropsicologicocentenario.cl/profesionales" />
+      </Helmet>
+      <h1 className="text-center mb-2" style={{ color: '#9271c2' }}>Nuestro Equipo de Psicólogos en Maipú</h1>
       <p className="text-center text-muted mb-5">Profesionales especializados listos para acompa&ntilde;arte</p>
       <Row className="justify-content-center">
         {professionals.map((pro) => (

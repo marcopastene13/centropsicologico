@@ -1,5 +1,6 @@
 import { Container, Row, Col, Card, Button, Carousel } from "react-bootstrap";
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import WhatsAppFloat from '../components/WhatsAppFloat';
 import WhyChooseUs from '../components/WhyChooseUs';
 import "../styles/MainPage.css";
@@ -51,12 +52,17 @@ const services = [
 export default function MainPage() {
     return (
         <div className="mainpage-container">
+            <Helmet>
+                <title>Psicólogos en Maipú | Centro Psicológico Centenario</title>
+                <meta name="description" content="Centro de psicología en Maipú con atención presencial y online. Psicoterapia individual, de pareja y familiar con profesionales especializadas. Agenda tu hora." />
+                <link rel="canonical" href="https://www.centropsicologicocentenario.cl/" />
+            </Helmet>
             <Container>
                 {/* HERO */}
                 <section className="jumbotron-section">
                     <div className="jumbotron-background" />
                     <div className="jumbotron-content text-center">
-                        <h1 className="jumbotron-title">Centro Psicológico Centenario</h1>
+                        <h1 className="jumbotron-title">Psicólogos en Maipú — Centro Psicológico Centenario</h1>
                         <p className="jumbotron-subtitle">
                             "Encuentra el equilibrio emocional que mereces"
                         </p>

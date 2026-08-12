@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { fetchProfesionalById, fetchHorariosDisponibles, crearReserva } from '../services/api';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -99,6 +100,10 @@ const ProfessionalDetail = () => {
 
   if (reservaExitosa) {
     return (
+      <>
+        <Helmet>
+          <title>{profesional.nombre} — Psicólogo/a en Maipú | Centro Psicológico Centenario</title>
+        </Helmet>
       <div className="container py-5">
         <div className="row justify-content-center">
           <div className="col-md-6">
@@ -117,11 +122,17 @@ const ProfessionalDetail = () => {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
   return (
     <div className="container py-4">
+      <Helmet>
+        <title>{profesional.nombre} — Psicólogo/a en Maipú | Centro Psicológico Centenario</title>
+        <meta name="description" content={`Agenda hora con ${profesional.nombre}, ${profesional.especialidad || 'psicóloga'} en Maipú. Atención presencial y online, reserva online en minutos.`} />
+        <link rel="canonical" href={`https://www.centropsicologicocentenario.cl/profesionales/${id}`} />
+      </Helmet>
       <ToastContainer position="top-right" autoClose={4000} />
       {/* Header profesional */}
       <div className="row mb-4 align-items-center">

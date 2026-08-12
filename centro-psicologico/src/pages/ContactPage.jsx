@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { enviarContacto } from '../services/api';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -56,11 +57,16 @@ const ContactPage = () => {
 
   return (
     <div className="container py-5">
+      <Helmet>
+        <title>Contacto | Centro Psicológico Centenario, Maipú</title>
+        <meta name="description" content="Contáctanos para agendar tu hora o resolver dudas. Centro Psicológico Centenario, ubicado en Maipú, Región Metropolitana." />
+        <link rel="canonical" href="https://www.centropsicologicocentenario.cl/contacto" />
+      </Helmet>
       <ToastContainer position="top-right" autoClose={4000} />
       <div className="row justify-content-center">
         <div className="col-md-8">
           <div className="text-center mb-4">
-            <h2 style={{color:'#4a6fa5'}}>Contactanos</h2>
+            <h1 style={{color:'#4a6fa5', fontSize: '2rem'}}>Contáctanos — Centro Psicológico en Maipú</h1>
             <p className="text-muted">Estamos disponibles para responder tus dudas y consultas.</p>
           </div>
 

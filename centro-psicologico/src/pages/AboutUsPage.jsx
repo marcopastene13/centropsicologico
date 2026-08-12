@@ -1,4 +1,5 @@
 import { Container, Row, Col, Card, Carousel } from "react-bootstrap";
+import { Helmet } from 'react-helmet-async';
 
 const teamValues = [
   {
@@ -33,9 +34,14 @@ const fotosCentro = [
 export default function AboutUsPage() {
   return (
     <Container className="mt-4">
+      <Helmet>
+        <title>Sobre Nosotros | Centro Psicológico Centenario, Maipú</title>
+        <meta name="description" content="Conoce al Centro Psicológico Centenario en Maipú: nuestra misión, valores y el equipo de psicólogas que trabaja por tu bienestar emocional." />
+        <link rel="canonical" href="https://www.centropsicologicocentenario.cl/sobrenosotros" />
+      </Helmet>
       {/* Header */}
       <div className="text-center mb-5">
-        <h1 className="display-4 mb-3">Sobre Nosotros</h1>
+        <h1 className="display-4 mb-3">Sobre Nosotros — Centro Psicológico en Maipú</h1>
         <p className="lead">
           Conoce más sobre nuestro centro, nuestra misión, visión y el equipo que trabaja por tu bienestar
         </p>
