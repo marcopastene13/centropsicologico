@@ -7,7 +7,7 @@ const WhyChooseUs = () => {
   const features = [
     {
       icon: '🎓',
-      title: '15+ años de experiencia',
+      title: '10+ años de experiencia',
       description: 'Atendiendo en Maipú desde 2009'
     },
     {

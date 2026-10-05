@@ -77,7 +77,7 @@ const ContactPage = () => {
                 <div className="card-body">
                   <h5 style={{color:'#4a6fa5'}}>Informacion</h5>
                   <hr/>
-                  <p className="mb-2"><strong>Direccion:</strong><br/>Los Libertadores 123, Santiago</p>
+                  <p className="mb-2"><strong>Direccion:</strong><br/>General Ordoñez 155 of.1104, Maipú</p>
                   <p className="mb-2"><strong>Telefono:</strong><br/>+56 9 8643 1293</p>
                   <p className="mb-2"><strong>Email:</strong><br/>contacto@centropsicologico.cl</p>
                   <p className="mb-2"><strong>Horario:</strong><br/>Lunes a Viernes<br/>9:00 - 18:00 hrs</p>
@@ -148,7 +148,7 @@ const ContactPage = () => {
                             rows="4"
                             value={form.mensaje}
                             onChange={handleChange}
-                            placeholder="Cuuntanos como podemos ayudarte..."
+                            placeholder="Cuentanos como podemos ayudarte..."
                           />
                           {errors.mensaje && <div className="invalid-feedback">{errors.mensaje}</div>}
                         </div>
