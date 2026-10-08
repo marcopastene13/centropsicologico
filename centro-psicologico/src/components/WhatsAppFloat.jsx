@@ -1,9 +1,8 @@
 import React from 'react';
+import { whatsappUrl as buildWhatsappUrl } from '../data/contact';
 
 const WhatsAppFloat = () => {
-  const phoneNumber = '56986431293';
-  const message = encodeURIComponent('Hola, me gustaria obtener mas informacion sobre los servicios del Centro Psicologico Centenario.');
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+  const whatsappUrl = buildWhatsappUrl('Hola, me gustaria obtener mas informacion sobre los servicios del Centro Psicologico Centenario.');
 
   return (
     <a

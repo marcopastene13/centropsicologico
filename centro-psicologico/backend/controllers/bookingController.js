@@ -40,6 +40,31 @@ const getSlotsBaseParaFecha = (profesional, fecha) => {
   return generarSlotsDelDia(horarioDia, profesional.duracionSesionMin || 60);
 };
 
+// Motivo por el que no hay horas, para que el frontend muestre un mensaje claro.
+const motivoSinHoras = (profesional, fecha) => {
+  const h = profesional.horarioSemanal;
+  const configurado = h && typeof h === 'object' && Object.values(h).some(d => d && d.activo);
+  if (!configurado) return 'sin_horario';
+  if ((profesional.fechasBloqueadas || []).some(b => b.fecha === fecha)) return 'bloqueada';
+  const dia = DIAS_SEMANA[new Date(fecha + 'T12:00:00').getDay()];
+  if (!h[dia] || !h[dia].activo) return 'no_atiende';
+  return 'completo';
+};
+
+// Fecha y hora actuales en Chile (el servidor corre en UTC).
+const ahoraEnChile = () => {
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Santiago', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+  }).formatToParts(new Date()).reduce((acc, p) => { acc[p.type] = p.value; return acc; }, {});
+  return {
+    hoyStr: `${partes.year}-${partes.month}-${partes.day}`,
+    minutos: (Number(partes.hour) % 24) * 60 + Number(partes.minute)
+  };
+};
+
+const MODALIDADES = { online: 'Online', presencial: 'Presencial' };
+
 const getAvailableSlots = async (req, res) => {
   try {
     const { profesionalId, fecha } = req.query;
@@ -53,6 +78,7 @@ const getAvailableSlots = async (req, res) => {
 
     const slotsBase = getSlotsBaseParaFecha(profesional, fecha);
     let horasDisponibles = slotsBase || [];
+    const hayBase = horasDisponibles.length > 0;
 
     if (horasDisponibles.length > 0) {
       const reservas = await Reserva.findAll({
@@ -63,15 +89,15 @@ const getAvailableSlots = async (req, res) => {
       horasDisponibles = horasDisponibles.filter(h => !horasOcupadas.includes(h));
 
       // Si la fecha consultada es hoy, sacar las horas que ya pasaron
-      const ahora = new Date();
-      const hoyStr = ahora.toISOString().split('T')[0];
+      const { hoyStr, minutos } = ahoraEnChile();
       if (fecha === hoyStr) {
-        const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
-        horasDisponibles = horasDisponibles.filter(h => toMinutos(h) > horaActual);
+        horasDisponibles = horasDisponibles.filter(h => toMinutos(h) > minutos);
       }
     }
 
-    res.json({ fecha, profesionalId, horasDisponibles });
+    const motivo = horasDisponibles.length > 0 ? null
+      : (hayBase ? 'completo' : motivoSinHoras(profesional, fecha));
+    res.json({ fecha, profesionalId, horasDisponibles, motivo });
   } catch (err) {
     console.error('Error getAvailableSlots:', err);
     res.status(500).json({ message: 'Error al obtener horarios' });
@@ -80,11 +106,14 @@ const getAvailableSlots = async (req, res) => {
 
 const createBooking = async (req, res) => {
   try {
-    const { profesionalId, fecha, hora, nombrePaciente, emailPaciente, telefonoPaciente, motivo, servicio } = req.body;
+    const { profesionalId, fecha, hora, nombrePaciente, emailPaciente, telefonoPaciente, motivo, servicio, modalidad } = req.body;
     if (!profesionalId || !fecha || !hora || !nombrePaciente || !emailPaciente || !telefonoPaciente) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
-    const hoyStr = new Date().toISOString().split('T')[0];
+    if (modalidad && !MODALIDADES[modalidad]) {
+      return res.status(400).json({ message: 'Modalidad invalida' });
+    }
+    const { hoyStr } = ahoraEnChile();
     if (fecha < hoyStr) {
       return res.status(400).json({ message: 'No puedes reservar en una fecha pasada' });
     }
@@ -103,6 +132,8 @@ const createBooking = async (req, res) => {
     if (existente) {
       return res.status(409).json({ message: 'Ese horario ya esta reservado, elige otro' });
     }
+    const modalidadTxt = modalidad ? MODALIDADES[modalidad] : '';
+    const servicioFinal = [servicio, modalidadTxt && `Atención ${modalidadTxt.toLowerCase()}`].filter(Boolean).join(' · ');
     const reserva = await Reserva.create({
       profesionalId,
       fecha,
@@ -111,23 +142,23 @@ const createBooking = async (req, res) => {
       pacienteEmail: emailPaciente,
       pacienteTelefono: telefonoPaciente,
       motivo: motivo || '',
-      servicio: servicio || '',
+      servicio: servicioFinal,
       estado: 'pendiente'
     });
     // Notificaciones por email (no bloqueante: si falla, la reserva ya quedo creada igual)
     try {
       await sendBookingEmailToPatient({
-        nombrePaciente, emailPaciente, profesionalNombre: profesional.nombre, fecha, hora, servicio
+        nombrePaciente, emailPaciente, profesionalNombre: profesional.nombre, fecha, hora, servicio, modalidad: modalidadTxt
       });
       await sendBookingEmailToProfessional({
         profesionalNombre: profesional.nombre, profesionalEmail: profesional.email,
-        pacienteNombre: nombrePaciente, pacienteTelefono: telefonoPaciente, fecha, hora, servicio, motivo
+        pacienteNombre: nombrePaciente, pacienteTelefono: telefonoPaciente, pacienteEmail: emailPaciente, fecha, hora, servicio, modalidad: modalidadTxt, motivo
       });
     } catch (emailErr) {
       console.warn('Email no configurado o fallo el envio:', emailErr.message);
     }
     res.status(201).json({
-      message: 'Reserva creada exitosamente',
+      message: 'Solicitud de hora recibida',
       reserva: {
         id: reserva.id,
         fecha: reserva.fecha,

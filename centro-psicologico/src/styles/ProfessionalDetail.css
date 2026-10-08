@@ -505,3 +505,40 @@
   color: #fff !important;
   font-weight: 600;
 }
+/* ===== SOLICITUD DE HORA (aviso, WhatsApp, pantalla de exito) ===== */
+.booking-notice {
+  background: #eef4fc;
+  border-left: 4px solid #4a6fa5;
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.85rem;
+  color: #2c4a6e;
+}
+
+.hora-aviso {
+  font-size: 0.78rem;
+  color: #7a6a2a;
+  background: #fff8e1;
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  margin-bottom: 0.75rem;
+}
+
+.success-detail {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  font-size: 0.92rem;
+}
+
+.wa-btn {
+  background-color: #25d366;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border: none;
+}
+
+.wa-btn:hover {
+  background-color: #1ebe5a;
+  color: #fff;
+}

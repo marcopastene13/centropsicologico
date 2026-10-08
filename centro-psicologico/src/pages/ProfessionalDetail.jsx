@@ -6,10 +6,20 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/ProfessionalDetail.css';
 import { getPricingFor, formatCLP } from '../data/pricing';
+import { whatsappUrl, mensajeConsultaHora, formatFechaLarga, hoyChile } from '../data/contact';
 
-const hoy = () => {
-  const d = new Date();
-  return d.toISOString().split('T')[0];
+const hoy = hoyChile;
+
+const MODALIDADES = [
+  { id: 'presencial', label: 'Presencial', desc: 'En el centro, Maipú' },
+  { id: 'online', label: 'Online', desc: 'Por videollamada' },
+];
+
+const MENSAJES_SIN_HORAS = {
+  sin_horario: 'Este profesional aún no tiene horarios cargados. Escríbenos por WhatsApp y te ayudamos.',
+  bloqueada: 'El profesional no atiende esta fecha. Prueba otro día.',
+  no_atiende: 'El profesional no atiende este día de la semana. Prueba otro día.',
+  completo: 'Ya no quedan horas para esta fecha. Prueba otro día.',
 };
 
 const ProfessionalDetail = () => {
@@ -27,6 +37,10 @@ const ProfessionalDetail = () => {
   // Paso 2: hora
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [loadingHoras, setLoadingHoras] = useState(false);
+  const [errorHoras, setErrorHoras] = useState(false);
+  const [motivoSinHoras, setMotivoSinHoras] = useState('');
+  const [reintento, setReintento] = useState(0);
+  const [modalidad, setModalidad] = useState('');
   const [sesionId, setSesionId] = useState('');
   const [hora, setHora] = useState('');
   // Paso 3: datos paciente
@@ -36,6 +50,7 @@ const ProfessionalDetail = () => {
   const [formErrors, setFormErrors] = useState({});
   const [enviando, setEnviando] = useState(false);
   const [reservaExitosa, setReservaExitosa] = useState(null);
+  const [waLink, setWaLink] = useState('');
 
   useEffect(() => {
     fetchProfesionalById(id)
@@ -48,10 +63,19 @@ const ProfessionalDetail = () => {
     setHora('');
     setHorasDisponibles([]);
     setLoadingHoras(true);
+    setErrorHoras(false);
+    setMotivoSinHoras('');
+    let cancelado = false;
     fetchHorariosDisponibles(id, fecha)
-      .then(data => { setHorasDisponibles(data.horasDisponibles || []); setLoadingHoras(false); })
-      .catch(() => { setLoadingHoras(false); });
-  }, [fecha, id]);
+      .then(data => {
+        if (cancelado) return;
+        setHorasDisponibles(data.horasDisponibles || []);
+        setMotivoSinHoras(data.motivo || '');
+        setLoadingHoras(false);
+      })
+      .catch(() => { if (cancelado) return; setErrorHoras(true); setLoadingHoras(false); });
+    return () => { cancelado = true; };
+  }, [fecha, id, reintento]);
 
   const validateForm = () => {
     const errors = {};
@@ -72,20 +96,46 @@ const ProfessionalDetail = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!sesionSeleccionada) { toast.error('Debes seleccionar el tipo de sesión'); return; }
+    if (!modalidad) { toast.error('Elige atención online o presencial'); return; }
     if (!hora) { toast.error('Debes seleccionar una hora'); return; }
     const errors = validateForm();
     if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
     setFormErrors({});
     setEnviando(true);
     const servicio = `${sesionSeleccionada.label} (${formatCLP(sesionSeleccionada.price)})`;
+
+    // Se abre la pestaña de WhatsApp en el momento del clic (los navegadores bloquean
+    // ventanas abiertas despues de una espera). Se completa cuando la solicitud se guarda.
+    const waWindow = window.open('', '_blank');
+    if (waWindow) {
+      try {
+        waWindow.document.write('<p style="font-family:sans-serif;padding:2rem">Preparando tu consulta por WhatsApp...</p>');
+      } catch { /* sin importancia */ }
+    }
+
     try {
       const resultado = await crearReserva({
-        profesionalId: id, fecha, hora, servicio, ...form
+        profesionalId: id, fecha, hora, servicio, modalidad, ...form
       });
+      const url = whatsappUrl(mensajeConsultaHora({
+        nombre: form.nombrePaciente,
+        profesional: profesional.nombre,
+        sesion: servicio,
+        modalidad,
+        fecha,
+        hora,
+        reservaId: resultado.reserva?.id
+      }));
+      setWaLink(url);
+      if (waWindow) {
+        waWindow.opener = null;
+        waWindow.location.href = url;
+      }
       setReservaExitosa(resultado);
-      toast.success('Reserva creada exitosamente!');
+      toast.success('Solicitud enviada');
     } catch (err) {
-      toast.error(err.message || 'Error al crear la reserva');
+      if (waWindow) waWindow.close();
+      toast.error(err.message || 'Error al enviar la solicitud');
     } finally {
       setEnviando(false);
     }
@@ -107,16 +157,33 @@ const ProfessionalDetail = () => {
       <div className="container py-5">
         <div className="row justify-content-center">
           <div className="col-md-6">
-            <div className="card shadow border-success">
-              <div className="card-body text-center p-5">
-                <div className="mb-3" style={{fontSize:'4rem'}}>&#10003;</div>
-                <h3 className="text-success mb-3">Reserva Confirmada</h3>
-                <p className="mb-1"><strong>Profesional:</strong> {reservaExitosa.reserva?.profesional}</p>
-                <p className="mb-1"><strong>Sesión:</strong> {sesionSeleccionada?.label} — {sesionSeleccionada && formatCLP(sesionSeleccionada.price)}</p>
-                <p className="mb-1"><strong>Fecha:</strong> {fecha}</p>
-                <p className="mb-1"><strong>Hora:</strong> {hora}</p>
-                <p className="text-muted mt-3">Recibirás una notificación de confirmación.</p>
-                <button className="btn btn-primary mt-4" onClick={() => navigate('/profesionales')}>Volver a Profesionales</button>
+            <div className="card shadow border-0">
+              <div className="card-body text-center p-4 p-md-5">
+                <div className="mb-3" style={{fontSize:'3.5rem', color:'#4a6fa5'}}>&#10003;</div>
+                <h3 className="mb-2" style={{color:'#4a6fa5'}}>Solicitud de hora recibida</h3>
+                <p className="text-muted mb-4">Tu hora aún <strong>no está confirmada</strong>. Falta un último paso.</p>
+
+                <div className="text-start success-detail mb-4">
+                  <p className="mb-1"><strong>Profesional:</strong> {reservaExitosa.reserva?.profesional}</p>
+                  <p className="mb-1"><strong>Sesión:</strong> {sesionSeleccionada?.label} — {sesionSeleccionada && formatCLP(sesionSeleccionada.price)}</p>
+                  <p className="mb-1"><strong>Modalidad:</strong> Atención {modalidad}</p>
+                  <p className="mb-1"><strong>Fecha:</strong> {formatFechaLarga(fecha)}</p>
+                  <p className="mb-0"><strong>Hora:</strong> {hora} hrs</p>
+                </div>
+
+                <div className="booking-notice text-start mb-4">
+                  <strong>Próximos pasos</strong>
+                  <ol className="mb-0 mt-2 ps-3">
+                    <li>Escríbenos por WhatsApp para <strong>consultar la disponibilidad</strong> de la hora.</li>
+                    <li>La hora queda <strong>confirmada una vez realizado el pago</strong>.</li>
+                  </ol>
+                </div>
+
+                <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn wa-btn w-100 fw-bold">
+                  Consultar disponibilidad por WhatsApp
+                </a>
+                <p className="small text-muted mt-3 mb-0">También te enviamos un correo con el detalle de tu solicitud.</p>
+                <button className="btn btn-link mt-2" onClick={() => navigate('/profesionales')}>Volver a Profesionales</button>
               </div>
             </div>
           </div>
@@ -150,7 +217,7 @@ const ProfessionalDetail = () => {
       {/* Barra de progreso */}
       <div className="progress-steps mb-4">
         {[
-          { n: 1, label: 'Sesión', done: !!sesionSeleccionada },
+          { n: 1, label: 'Sesión', done: !!sesionSeleccionada && !!modalidad },
           { n: 2, label: 'Fecha', done: !!fecha },
           { n: 3, label: 'Hora', done: !!hora },
           { n: 4, label: 'Tus datos', done: !!(form.nombrePaciente && form.emailPaciente && form.telefonoPaciente) },
@@ -195,6 +262,25 @@ const ProfessionalDetail = () => {
                 ) : (
                   <p className="text-muted mb-0">Aún no hay valores cargados para este profesional. Contáctanos para más información.</p>
                 )}
+
+                <label className="form-label fw-bold mt-4 mb-2">Tipo de atención *</label>
+                <div className="row g-3" role="radiogroup" aria-label="Tipo de atención">
+                  {MODALIDADES.map(m => (
+                    <div className="col-6" key={m.id}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={modalidad === m.id}
+                        className={`session-card w-100 h-100${modalidad === m.id ? ' selected' : ''}`}
+                        onClick={() => setModalidad(m.id)}
+                      >
+                        {modalidad === m.id && <span className="session-check">✓</span>}
+                        <span className="session-label">Atención {m.label.toLowerCase()}</span>
+                        <span className="session-note">{m.desc}</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -266,11 +352,18 @@ const ProfessionalDetail = () => {
                   <div className="card-body d-flex flex-column">
                     {loadingHoras ? (
                       <div className="text-center py-4 flex-grow-1"><div className="spinner-border spinner-border-sm text-primary"></div><p className="small mt-2 mb-0">Cargando horarios...</p></div>
+                    ) : errorHoras ? (
+                      <div className="text-center py-4 flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+                        <p className="text-danger mb-2">No pudimos cargar los horarios. El servidor puede estar despertando, intenta de nuevo.</p>
+                        <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => setReintento(n => n + 1)}>Reintentar</button>
+                      </div>
                     ) : horasDisponibles.length === 0 ? (
                       <div className="text-center py-4 flex-grow-1 d-flex align-items-center justify-content-center">
-                        <p className="text-muted mb-0">No hay horarios disponibles para esta fecha. Prueba otro día.</p>
+                        <p className="text-muted mb-0">{MENSAJES_SIN_HORAS[motivoSinHoras] || 'No hay horarios disponibles para esta fecha. Prueba otro día.'}</p>
                       </div>
                     ) : (
+                      <>
+                      <p className="hora-aviso">Consulta por la disponibilidad de la hora antes de confirmar.</p>
                       <div className="hora-grid flex-grow-1">
                         {horasDisponibles.map(h => (
                           <button
@@ -283,6 +376,7 @@ const ProfessionalDetail = () => {
                           </button>
                         ))}
                       </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -347,7 +441,7 @@ const ProfessionalDetail = () => {
           {/* RESUMEN */}
           <div className="col-lg-4">
             <div className="summary-card shadow-sm">
-              <h5 className="summary-title">Resumen de tu reserva</h5>
+              <h5 className="summary-title">Resumen de tu solicitud</h5>
               <div className="summary-row">
                 <span>Profesional</span>
                 <strong>{profesional?.nombre}</strong>
@@ -355,6 +449,10 @@ const ProfessionalDetail = () => {
               <div className="summary-row">
                 <span>Sesión</span>
                 <strong className={sesionSeleccionada ? '' : 'text-muted'}>{sesionSeleccionada ? sesionSeleccionada.label : 'Sin elegir'}</strong>
+              </div>
+              <div className="summary-row">
+                <span>Atención</span>
+                <strong className={modalidad ? '' : 'text-muted'}>{modalidad ? (modalidad === 'online' ? 'Online' : 'Presencial') : 'Sin elegir'}</strong>
               </div>
               <div className="summary-row">
                 <span>Fecha</span>
@@ -369,16 +467,19 @@ const ProfessionalDetail = () => {
                 <span>Total</span>
                 <strong>{sesionSeleccionada ? formatCLP(sesionSeleccionada.price) : '—'}</strong>
               </div>
+              <div className="booking-notice mt-3">
+                Esto es una <strong>solicitud de hora</strong>. Al enviarla te llevamos a WhatsApp para consultar la disponibilidad. La hora se <strong>confirma una vez realizado el pago</strong>.
+              </div>
               <button
                 type="submit"
                 className="btn w-100 text-white fw-bold mt-3"
                 style={{backgroundColor:'#4a6fa5'}}
-                disabled={enviando || !hora || !sesionSeleccionada}
+                disabled={enviando || !hora || !sesionSeleccionada || !modalidad}
               >
-                {enviando ? 'Reservando...' : 'Confirmar Reserva'}
+                {enviando ? 'Enviando solicitud...' : 'Solicitar hora'}
               </button>
-              {(!sesionSeleccionada || !hora) && (
-                <p className="summary-hint">Elige tu sesión y un horario para poder confirmar</p>
+              {(!sesionSeleccionada || !modalidad || !hora) && (
+                <p className="summary-hint">Elige sesión, tipo de atención y horario para continuar</p>
               )}
             </div>
           </div>
