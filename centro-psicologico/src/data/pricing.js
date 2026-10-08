@@ -6,8 +6,8 @@
  */
 
 const preciosPatriciaYasna = [
-  { id: "individual", label: "Psicoterapia individual", price: 38000, note: "por sesión" },
-  { id: "pack4", label: "Copago preferencial", price: 135000, note: "pack de 4 sesiones" },
+  { id: "individual", label: "Psicoterapia individual", price: 40000, note: "por sesión" },
+  { id: "pack4", label: "Copago preferencial", price: 145000, note: "pack de 4 sesiones" },
   { id: "pareja", label: "Terapia de pareja", price: 55000, note: "por sesión" },
   { id: "pack4-pareja", label: "Copago terapia de pareja", price: 190000, note: "pack de 4 sesiones" },
 ];
