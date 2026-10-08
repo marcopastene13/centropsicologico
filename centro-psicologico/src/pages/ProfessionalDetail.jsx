@@ -180,7 +180,8 @@ const ProfessionalDetail = () => {
                 </div>
 
                 <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn wa-btn w-100 fw-bold">
-                  Consultar disponibilidad por WhatsApp
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9s-.5-.1-.7.1-.8.9-.9 1.1-.3.2-.6.1a7.8 7.8 0 0 1-3.9-3.4c-.3-.5.3-.5.8-1.5.1-.2 0-.4 0-.5l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.4 3.4 0 0 0-1 2.5 5.9 5.9 0 0 0 1.2 3.1 13.5 13.5 0 0 0 5.2 4.6c1.9.8 2.7.9 3.6.7a3 3 0 0 0 2-1.4 2.5 2.5 0 0 0 .2-1.4c-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.4 5 5.2-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
+                  <span>Consultar disponibilidad por WhatsApp</span>
                 </a>
                 <p className="small text-muted mt-3 mb-0">También te enviamos un correo con el detalle de tu solicitud.</p>
                 <button className="btn btn-link mt-2" onClick={() => navigate('/profesionales')}>Volver a Profesionales</button>

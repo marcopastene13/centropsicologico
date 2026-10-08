@@ -15,6 +15,11 @@ const FROM = 'Centro Psicológico Centenario <contacto@centropsicologicocentenar
 const WHATSAPP_NUMBER = '56986431293';
 const WHATSAPP_DISPLAY = '+56 9 8643 1293';
 const COLOR = '#4a6fa5';
+// Correo del centro: recibe copia de todas las solicitudes, asi nunca se pierde una
+// aunque el correo de la profesional este mal cargado o sea un placeholder.
+const CENTER_EMAIL = process.env.CENTER_EMAIL || 'cconsultapsicologica@gmail.com';
+// Dominio de relleno que dejo el seed: no es real y los correos rebotan.
+const esCorreoPlaceholder = (e) => /@centropsicologico\.cl$/i.test(String(e || '').trim());
 
 // Los datos del paciente los escribe el propio paciente: hay que escaparlos
 // antes de meterlos en el HTML (si no, un "<" en el motivo rompe el correo).
@@ -175,9 +180,16 @@ const sendBookingEmailToPatient = async ({ nombrePaciente, emailPaciente, profes
 // ---------- Correo a la profesional ----------
 const sendBookingEmailToProfessional = async ({ profesionalNombre, profesionalEmail, pacienteNombre, pacienteTelefono, pacienteEmail, fecha, hora, servicio, modalidad, motivo }) => {
   const client = getClient();
-  if (!client || !profesionalEmail) {
-    if (!profesionalEmail) console.log('[Email] Profesional sin email registrado, no se notifica.');
-    else console.log('[Email] RESEND_API_KEY no configurada. Email simulado a', profesionalEmail);
+  const destinatarios = [...new Set(
+    [profesionalEmail, CENTER_EMAIL]
+      .map(e => String(e || '').trim().toLowerCase())
+      .filter(e => e && !esCorreoPlaceholder(e))
+  )];
+  if (esCorreoPlaceholder(profesionalEmail)) {
+    console.warn(`[Email] ${profesionalNombre} tiene un correo de relleno (${profesionalEmail}); se avisa solo al centro. Actualizalo en el panel.`);
+  }
+  if (!client || destinatarios.length === 0) {
+    console.log('[Email] RESEND_API_KEY no configurada o sin destinatarios. Email simulado a', destinatarios.join(', '));
     return { success: false, simulated: true };
   }
   try {
@@ -222,11 +234,12 @@ const sendBookingEmailToProfessional = async ({ profesionalNombre, profesionalEm
     ].filter(l => l !== null).join('\n');
 
     return await send(client, {
-      to: profesionalEmail,
+      to: destinatarios,
+      reply_to: pacienteEmail || undefined,
       subject: `Nueva solicitud: ${String(pacienteNombre).replace(/[\r\n]+/g, ' ').slice(0, 60)} - ${fechaTxt} ${hora} hrs`,
       html,
       text
-    }, `Aviso enviado a profesional: ${profesionalEmail}`);
+    }, `Aviso enviado a: ${destinatarios.join(', ')}`);
   } catch (err) {
     console.error('[Email] Error enviando a profesional:', err.message);
     return { success: false, error: err.message };
